@@ -4,12 +4,24 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' &lt; '17.0' ">
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' &gt;= '17.0' ">
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

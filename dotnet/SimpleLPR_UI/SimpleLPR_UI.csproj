@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+   <PropertyGroup Condition=" '$(VisualStudioVersion)' &lt; '17.0' ">
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' &gt;= '17.0' ">
+    <TargetFramework>net6.0-windows</TargetFramework>
+  </PropertyGroup>   
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -25,11 +29,17 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <!--<CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>-->
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <NoWarn>1701;1702;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

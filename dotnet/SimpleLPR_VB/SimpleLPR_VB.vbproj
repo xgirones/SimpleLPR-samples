@@ -5,7 +5,11 @@
     <RootNamespace>SimpleLPR_VB</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' &lt; '17.0' ">
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' &gt;= '17.0' ">
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
