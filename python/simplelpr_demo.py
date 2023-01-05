@@ -37,7 +37,16 @@ def analyze_file(eng, country_id, img_path, key_path):
     # Looks for license plate candidates in an image in the file system.
     cds = proc.analyze(img_path)
 
-    # Alternatively, the input image could be supplied through an object supporting the buffer protocol:
+    # Alternatively, the input image can be supplied through an object supporting the buffer protocol:
+    #
+    # fh = open(img_path, 'rb')
+    # try:
+    #     ba = bytearray(fh.read())
+    # finally:
+    #     fh.close()
+    # cds = proc.analyze(ba)
+    #
+    # or	
     #
     # import numpy as np
     # from PIL import Image

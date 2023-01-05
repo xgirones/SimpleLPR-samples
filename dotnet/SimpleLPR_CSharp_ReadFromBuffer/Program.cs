@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using SimpleLPR3;
 
 namespace SimpleLPR_CSharp_ReadFromBuffer
@@ -99,7 +100,17 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
                     Console.WriteLine("Results of IProcessor.analyze(file)");
                     dump_candidates(cds);
 
-                    // 2. Use one of the versions that take a buffer in memory in accordance with the bitmap pixel format.
+                    // 2. Use the analyze version that takes a Stream object.
+                    using (FileStream fs = File.OpenRead(sFilePath))
+                    {
+                        cds = proc.analyze(fs);
+                    }
+
+                    Console.WriteLine("***********");
+                    Console.WriteLine("Results of IProcessor.analyze(stream)");
+                    dump_candidates(cds);
+
+                    // 3. Use one of the versions that take a buffer in memory in accordance with the bitmap pixel format.
 
                     Bitmap bm = (Bitmap)Bitmap.FromFile(sFilePath);
 
