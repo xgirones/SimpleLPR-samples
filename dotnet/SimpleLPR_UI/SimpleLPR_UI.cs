@@ -22,12 +22,12 @@ namespace SimpleLPR_UI
         string _curFile;
         Bitmap _curBitmap;
         List<Candidate> _curCands;
-        
+
         List<string> files;
         int enumF;
 
         List<LPEntry> lps;
-        
+
         public SimpleLPR_UI()
         {
             InitializeComponent();
@@ -37,10 +37,10 @@ namespace SimpleLPR_UI
             try
             {
                 EngineSetupParms setupP;
-                setupP.cudaDeviceId = -1; // Use CPU
+                setupP.cudaDeviceId = -1; // Use CPU.
                 setupP.enableImageProcessingWithGPU = false;
                 setupP.enableClassificationWithGPU = false;
-                setupP.maxConcurrentImageProcessingOps = 0;  // Use the default value.  
+                setupP.maxConcurrentImageProcessingOps = 0;  // Use the default value.
 
                 _lpr = SimpleLPR.Setup(setupP);
             }
@@ -98,7 +98,7 @@ namespace SimpleLPR_UI
                             if (cd.matches.Count > 0)
                             {
                                 CountryMatch cm = cd.matches[0];
-                                
+
                                 foreach (Element e in cm.elements)
                                 {
                                     gfx.DrawRectangle(skyBluePen, e.bbox);
@@ -153,7 +153,7 @@ namespace SimpleLPR_UI
             Rectangle r = new Rectangle(0, 0, bm.Width, bm.Height);
             BitmapData bmd = null;
 
-            // Only PixelFormat.Format24bppRgb and PixelFormat.Format8bppIndexed are supported
+            // Only PixelFormat.Format24bppRgb and PixelFormat.Format8bppIndexed are supported.
 
             switch (bm.PixelFormat)
             {

@@ -19,7 +19,7 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
             {
                 Console.WriteLine("{0} license plate candidates found:", cds.Count);
 
-                // Iterate over all candidates
+                // Iterate over all candidates.
 
                 foreach (Candidate cd in cds)
                 {
@@ -28,7 +28,7 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
                     Console.WriteLine("Plate confidence: {0}. Plate vertices: {1}", cd.plateDetectionConfidence, string.Join(", ", cd.plateRegionVertices));
                     Console.WriteLine("Matches:");
 
-                    // Iterate over all country matches
+                    // Iterate over all country matches.
 
                     foreach (CountryMatch match in cd.matches)
                     {
@@ -48,18 +48,18 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
 
         static void Main(string[] args)
         {
-            // This sample demonstrates the use of the 'analyze' methods that are fed a memory buffer, which are advised for video processing.
+            // This sample demonstrates the use of the 'analyze' variants that are fed a memory buffer, which are advised for video processing.
 
             // Create an instance of the SimpleLPR engine.
             EngineSetupParms setupP;
-            setupP.cudaDeviceId = -1; // Select CPU
+            setupP.cudaDeviceId = -1; // Select CPU.
             setupP.enableImageProcessingWithGPU = false;
             setupP.enableClassificationWithGPU = false;
             setupP.maxConcurrentImageProcessingOps = 0;  // Use the default value.  
 
             ISimpleLPR lpr = SimpleLPR.Setup(setupP);
 
-            // Output the version number
+            // Output the version number.
             VersionNumber ver = lpr.versionNumber;
             Console.WriteLine("SimpleLPR version {0}.{1}.{2}.{3}", ver.A, ver.B, ver.C, ver.D);
 
@@ -70,7 +70,7 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
                 {
                     string sFilePath = args[1];
 
-                    // Configure country weights based on the selected country
+                    // Configure country weights based on the selected country.
 
                     uint countryId = uint.Parse(args[0]);
 
@@ -84,16 +84,16 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
 
                     lpr.realizeCountryWeights();
 
-                    // Set the product key (if supplied)
+                    // Set the product key (if supplied).
                     if (args.Length == 3)
                         lpr.set_productKey(args[2]);
 
-                    // Create a processor object
+                    // Create a processor object.
                     IProcessor proc = lpr.createProcessor();
                     proc.plateRegionDetectionEnabled = true;
                     proc.cropToPlateRegionEnabled = true;
 
-                    // 1. Use the analyze version that takes the path to a file
+                    // 1. Use the analyze version that takes the path to a file.
                     List<Candidate> cds = proc.analyze(sFilePath);
 
                     Console.WriteLine("***********");
@@ -117,7 +117,7 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
                     Rectangle r = new Rectangle(0, 0, bm.Width, bm.Height);
                     BitmapData bmd = null;
 
-                    // Only PixelFormat.Format24bppRgb and PixelFormat.Format8bppIndexed are supported
+                    // Only PixelFormat.Format24bppRgb and PixelFormat.Format8bppIndexed are supported.
 
                     switch (bm.PixelFormat)
                     {
@@ -159,7 +159,7 @@ namespace SimpleLPR_CSharp_ReadFromBuffer
                             break;
                         case PixelFormat.Format8bppIndexed:
                             {
-                                // Employ the 8bpp indexed raster directly. This will fail miserably in case that the bitmap palette is
+                                // Use the 8bpp indexed raster directly. This will fail miserably in case that the bitmap palette is
                                 // not trivial e.g. 0 -> {0,0,0}, 1 -> {1,1,1}, .. , 255 -> {255,255,255}.
 
                                 bmd = bm.LockBits(r, ImageLockMode.ReadOnly, bm.PixelFormat);

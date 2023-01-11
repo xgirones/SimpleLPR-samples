@@ -4,17 +4,19 @@ Module Program
 
     Sub Main()
 
-        ' Create an instance of the SimpleLPR engine
+        ' Create an instance of the SimpleLPR engine.
+
         Dim lpr As SimpleLPR3.ISimpleLPR
 
         Dim setupP As SimpleLPR3.EngineSetupParms
-        setupP.cudaDeviceId = -1 ' Use CPU
+        setupP.cudaDeviceId = -1 ' Use CPU.
         setupP.enableImageProcessingWithGPU = False
         setupP.enableClassificationWithGPU = False
         setupP.maxConcurrentImageProcessingOps = 0 ' Use the Default value.  
         lpr = SimpleLPR3.SimpleLPR.Setup(setupP)
 
-        ' Display version number
+        ' Display the version number.
+
         Dim ver As SimpleLPR3.VersionNumber
         ver = lpr.versionNumber
 
@@ -25,7 +27,7 @@ Module Program
 
         If args.Count >= 3 And args.Count <= 4 Then
 
-            'Configure country weights based on the selected country
+            'Configure the country weights based on the selected country.
 
             Dim countryId As UInteger
             countryId = UInteger.Parse(args(1))
@@ -39,20 +41,20 @@ Module Program
 
             lpr.realizeCountryWeights()
 
-            'Set product key (if supplied)
+            'Set the product key (if supplied).
 
             If args.Count = 4 Then
                 lpr.set_productKey(args(3))
             End If
 
-            'Create processor
+            'Create an instance of 'IProcessor'.
 
             Dim proc As SimpleLPR3.IProcessor
             proc = lpr.createProcessor()
             proc.plateRegionDetectionEnabled = True
             proc.cropToPlateRegionEnabled = True
 
-            'Process source file
+            'Process the source file.
 
             Console.WriteLine("Processing...")
             Dim cds As System.Collections.Generic.List(Of SimpleLPR3.Candidate)
@@ -66,7 +68,8 @@ Module Program
 
                 Console.WriteLine("{0} license plate candidates found:", cds.Count)
 
-                ' Iterate over all candidates
+                ' Iterate over all candidates.
+
                 For Each cd As SimpleLPR3.Candidate In cds
 
                     Console.WriteLine("***********")
@@ -74,7 +77,8 @@ Module Program
                     Console.WriteLine("Plate confidence: {0}. Plate vertices: {1}", cd.plateDetectionConfidence, String.Join(", ", cd.plateRegionVertices))
                     Console.WriteLine("Matches:")
 
-                    ' Iterate over all country matches
+                    ' Iterate over all country matches.
+
                     For Each match As SimpleLPR3.CountryMatch In cd.matches
 
                         Console.WriteLine("-----------")
@@ -91,7 +95,7 @@ Module Program
 
         Else
 
-            ' Wrong number of arguments, display usage
+            ' Wrong number of arguments, display usage.
 
             Console.WriteLine()
             Console.WriteLine("Usage:  {0} <country id> <source file> [product key]", IO.Path.GetFileName(Process.GetCurrentProcess.MainModule.FileName))
