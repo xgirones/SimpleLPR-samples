@@ -83,10 +83,12 @@ def analyze_file(eng, country_id, img_path, key_path):
 def main():
     try:
 
-        # The simplelpr extension requires 64-bit Python 3.8 or 3.9
+        # The simplelpr extension requires 64-bit Python 3.8, 3.9, 3.10 or 3.11
 
-        if sys.version_info[0:2] != (3, 8) and sys.version_info[0:2] != (3, 9):
-            raise RuntimeError('This demo requires either Python 3.8 or 3.9')
+        supported_python_versions = [(3, 8), (3, 9), (3, 10), (3, 11)]
+
+        if sys.version_info[0:2] not in  supported_python_versions:
+            raise RuntimeError('Apologies for the inconvenience, but to function properly this demo requires any of the following Python versions: ' + ' '.join([str(item[0]) + '.' + str(item[1]) + ' ' for item in  supported_python_versions]))
 
         if len(sys.argv) == 1:
             sys.argv.append('--help')
