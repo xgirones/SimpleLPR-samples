@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.10.21" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.21" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.21" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.21" />
+    <PackageReference Include="DynamicData" Version="7.14.2" />
+    <PackageReference Include="Emgu.CV" Version="4.5.1.4349" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.1.4349" Condition=" '$(OS)' == 'Windows_NT' " />
+    <PackageReference Include="Emgu.CV.runtime.ubuntu.20.04-x64" Version="4.5.1.4349" Condition=" '$(OS)' != 'Windows_NT' " />
+    <PackageReference Include="F23.StringSimilarity" Version="5.1.0" />
+    <PackageReference Include="MessageBox.Avalonia" Version="2.1.0" />
+    <PackageReference Include="ReactiveUI.Fody" Version="18.4.44" />
+    <PackageReference Include="ReactiveUI.Validation" Version="3.1.7" />
+    <PackageReference Include="SimpleLPR" Version="3.5.4" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
+    <PackageReference Include="XamlNameReferenceGenerator" Version="1.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="Observables\LicensePlateAggregateObservable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="Observables\LockableDisposableWrapper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="Observables\SimpleLPRObservable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="Observables\VideoCaptureObservable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="ViewModels\LicensePlateViewModel.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="Views\LicensePlateView.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="Views\LicensePlateView.axaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="ViewModels\Util.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:VideoANPR.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:rxui="http://reactiveui.net"
+        xmlns:uc="clr-namespace:VideoANPR.Views;assembly=VideoANPR"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="780"
+        x:Class="VideoANPR.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Height="780" Width="800" CanResize="false"
+        Icon="/Assets/SimpleLPR-logo.ico"
+        Title="VideoANPR">
+  <Design.DataContext>
+      <!-- This only sets the DataContext for the previewer in an IDE,
+            to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+      <vm:MainWindowViewModel/>
+  </Design.DataContext>
+  <StackPanel>
+    <Border x:Name="VideoCanvas" Height="450">
+      <Border.Background>
+        <ImageBrush Stretch="UniformToFill"/>
+      </Border.Background>
+    </Border>
+    <ListBox Name="LB_DetectedPlates" Height="160" Margin="2,5,2,0" VerticalAlignment="Top"
+             ScrollViewer.HorizontalScrollBarVisibility="Visible">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Focusable" Value="True"/>
+          <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+      </ListBox.Styles>    
+      <ListBox.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+      </ListBox.ItemsPanel>
+      <ListBox.ItemTemplate>
+        <DataTemplate DataType="vm:LicensePlateViewModel">
+          <uc:LicensePlateView/>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <Grid Margin="5,5,10,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Label Name="Label_EnabledCountries" Grid.Column="0">
+        <TextBlock Text="Enabled&#xD;Countries:" VerticalAlignment="Center"/>
+      </Label>
+      <ListBox Grid.Column="1" Name="LB_EnabledCountries" VerticalAlignment="Top"
+               ScrollViewer.HorizontalScrollBarVisibility="Visible"
+               ToolTip.Tip="Specify the target countries where the license plates are expected to be from.&#x0a;Enabling syntax validation may improve the accuracy of the results.">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal"/>
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+      </ListBox>
+    </Grid>
+    <Grid Margin="5,10,5,0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <Label Name="Label_InputVideo" Grid.Row="0" Grid.Column="0" Content="Input Video:" Margin="0,0,2,0" VerticalAlignment="Center"/>
+      <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBox Name="TB_InputVideo" Width="200" Margin="0,0,2,0" VerticalAlignment="Center"
+                 ToolTip.Tip="Please specify the location of the input video file. Alternatively, you can provide a RTSP stream URL as the source."/>
+        <Button Name="Button_SelectVideo" Content="···" Margin="0,0,10,0" Width="NaN"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                Height="{Binding #TB_RegistrationKey.Bounds.Height}" VerticalAlignment="Center"
+                ToolTip.Tip="Click this button to access a file dialog and choose the location of the input video file."/>
+      </StackPanel>
+      <Label Name="Label_RegistrationKey" Grid.Row="0" Grid.Column="2" Content="Product Key:" Margin="0,0,2,0" VerticalAlignment="Center"/>
+      <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBox Name="TB_RegistrationKey" Width="200" Margin="0,0,2,0" VerticalAlignment="Center"                  
+                 ToolTip.Tip="Please provide the path to the file containing the product registration key. You may leave this field blank during the evaluation period."/>
+        <Button Name="Button_SelectKey" Content="···" Margin="0,0,0,0" Width="NaN"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                Height="{Binding #TB_RegistrationKey.Bounds.Height}" VerticalAlignment="Center"
+                ToolTip.Tip="Click here to open a file dialog and specify the&#x0a;path to the file that contains the product registration key."/>
+      </StackPanel>
+      <StackPanel Grid.Row="0" Grid.Column="4" Grid.RowSpan="2" Margin="10,-5,0,0" VerticalAlignment="Top">
+        <CheckBox Name="CB_PlateRegionDetection" Content="Detect Plate Region"  Margin="0,0,0,0"
+                  ToolTip.Tip="Enable enhanced license plate detection logic to improve the accuracy of candidate identification, and reject irrelevant candidates."/>
+        <CheckBox Name="CB_CropToPlateRegion" Content="Crop To Plate Region" Margin="0,-10,0,0"
+                  ToolTip.Tip="Use this option to crop the localized text to fit within the boundaries of the enclosing license plate frame.&#x0a;This can potentially enhance the accuracy of the OCR process."/>
+      </StackPanel>
+      <Label Name="Label_RegKeyErrors" Grid.Row="1" Grid.Column="3" Content="" Foreground="Red" VerticalAlignment="Top" Margin="0,0,0,0" HorizontalAlignment="Left"/>
+    </Grid>
+    <Grid Margin="10,5,20,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <CheckBox Grid.Column="0" Name="CB_DrawOverlays" Content="Draw License Plate Overlays"  Margin="0,0,0,0"
+                VerticalContentAlignment="Center"
+                ToolTip.Tip="Toggle the checkbox to enable the display of license plate boundaries and text as overlays on the video frame. When checked, the detected license plates will be visually highlighted, allowing for easier identification and analysis."/>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+        <Button Name="Button_PlayContinue" Content="Play" Margin="0,0,10,0" Width="60"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                ToolTip.Tip="Open the video source and initiate license plate detection and recognition"/>
+        <Button Name="Button_Pause" Content="Pause" Margin="0,0,10,0" Width="60"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                ToolTip.Tip="Pause license plate detection and recognition"/>
+        <Button Name="Button_Stop" Content="Stop" Margin="0,0,0,0" Width="60"
+                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                ToolTip.Tip="Stop license plate detection and recognition and close the video source"/>
+      </StackPanel>
+      <Button Grid.Column="2" Name="Button_Exit" Content="Exit" Width="60"
+              HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+              ToolTip.Tip="Quits the application"/>
+    </Grid>
+  </StackPanel>
+</Window>

@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VideoANPR.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="VideoANPR.Views.LicensePlateView"
+             x:DataType="vm:LicensePlateViewModel">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="100"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Image Name="Image_LP" Grid.Row="0" Margin="2"  HorizontalAlignment="Center" VerticalAlignment="Stretch"
+            Width="NaN" Height="NaN" Stretch="UniformToFill"/>
+    <Label  Grid.Row="1" Name="Label_LP" FontSize="14" FontWeight="SemiBold" Width="NaN" Height="NaN" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  </Grid>
+</UserControl>
