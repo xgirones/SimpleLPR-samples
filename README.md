@@ -2,7 +2,7 @@ This repository contains code examples for **SimpleLPR**, which is a library for
 
 Typical detection rates range between 85% and 95%, provided the license plates are in good condition, free of obstructions, and the text height is at least 20 pixels.
 
-![Screen capture of the SimpleLPR_UI demo application](https://www.warelogic.com/images/screenshot6.jpg)
+![Screen capture of the VideoANPR demo application](https://www.warelogic.com/images/screenshot_videoanpr_1.jpg)
 
 ## Instructions
 
@@ -21,7 +21,7 @@ To run the python sample, first install the SimpleLPR package using
 
     pip install SimpleLPR
 
-Python wheels are provided for the *3.8* and *3.9* interpreters, and the *windows-x64* and *linux-x64* platforms.
+Python wheels are provided for the *3.8* , *3.9*,  *3.10*,  and *3.11* interpreters, and the *windows-x64* and *linux-x64* platforms.
 
 ### C/C++
 
