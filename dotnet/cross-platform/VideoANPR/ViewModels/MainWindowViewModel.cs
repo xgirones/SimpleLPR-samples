@@ -359,7 +359,7 @@ namespace VideoANPR.ViewModels
             lpr_.realizeCountryWeights();
 
             // Create a new video capture using the specified VideoPath.
-            videoCapture_ = new Emgu.CV.VideoCapture(this.VideoPath);
+            videoCapture_ = new Emgu.CV.VideoCapture(this.VideoPath, Emgu.CV.VideoCapture.API.Ffmpeg);
 
             // Check if the video capture is successfully opened.
             if (!videoCapture_.IsOpened)
