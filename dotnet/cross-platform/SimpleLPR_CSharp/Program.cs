@@ -1,14 +1,14 @@
 ﻿/*
     SimpleLPR_CSharp
 
-    Sample C# application demonstrating the use of SimpleLPR.
-    Looks for license plates in all pictures in a folder, and saves
+	Sample C# application demonstrating the usage of SimpleLPR
+    Looks for license plates in all pictures in a folder an saves
     the output in a XML file.
  
-    (c) Copyright Warelogic, 2009
-    All rights reserved. Copying or other reproduction of this 
-    program except for archival purposes is prohibited without
-    written consent of Warelogic.
+	(c) Copyright Warelogic, 2009
+	All rights reserved. Copying or other reproduction of this 
+	program except for archival purposes is prohibited without
+	written consent of Warelogic.
 */
 
 using System;
@@ -19,83 +19,67 @@ using SimpleLPR3;
 
 namespace SimpleLPR_CSharp
 {
-    struct Result
+    class WorkItem
     {
         public string filePath;
-        public List<Candidate> lps;
+        public IProcessorPoolResult result;
     }
 
     class Program
     {
-        private ISimpleLPR _lpr;                // Instance of the SimpleLPR engine.
-        private List<Result> _results;          // Recognition results.
-        private Stack<IProcessor> _processors;  // Pool of IProcessor, to avoid creating and destroying IProcessor instances on each detection.
-        private int _cPending;                  // Number of pending operations.
+        private ISimpleLPR _lpr;                // Instance of the SimpleLPR engine
+        private List<WorkItem> _workItems;      // Scheduled detections
+        private IProcessorPool _pool;           // Pool of IProcessor, to avoid creating and destroying IProcessor on each detection
 
-        // Analyze a picture asynchronously.
-        private void process(Object threadContext)
+        // Write result to the console
+        private void PrintResult(WorkItem wi)
         {
-            string imgFileName = (string)threadContext;  // The image file to be processed is supplied in the asynchronous call context.
-
-            // Get an IProcessor from the processor pool.
-            System.Threading.Monitor.Enter(this);
-            IProcessor proc = _processors.Pop();
-            System.Threading.Monitor.Exit(this);
-
-            List<Candidate> cds = proc.analyze(imgFileName); // Look for license plates.
-
-            System.Threading.Monitor.Enter(this);
-
-            Result res;
-            res.filePath = imgFileName;
-            res.lps = cds;
-            _results.Add(res); // Keep the result.
-
-            _processors.Push(proc); // Return processor to the pool.
-
-            --_cPending;       // Decrement the number of pending operations
-            System.Threading.Monitor.Pulse(this);   // Signal end of operation.
-            System.Threading.Monitor.Exit(this);
-
-            // Write result to the console.
-
             System.IO.StringWriter strw = new System.IO.StringWriter();
 
-            System.IO.FileInfo ffo = new System.IO.FileInfo(imgFileName);
+            System.IO.FileInfo ffo = new System.IO.FileInfo(wi.filePath);
             strw.Write("{0} : ", ffo.Name);
 
-            if (cds.Count == 0)
-                strw.WriteLine("Nothing detected.");
+            if (wi.result.errorInfo != null)
+            {
+                strw.WriteLine("Exception occurred: {0}", wi.result.errorInfo.ToString());
+            }
             else
             {
-                foreach (Candidate cd in cds)
+                if (wi.result.candidates.Count == 0)
                 {
-                    // The last element in the 'matches' list always corresponds to the raw text,
-                    // Hence, single item lists indicate unmatched candidates.
-
-                    CountryMatch cm = cd.matches[0];
-
-                    if (cd.matches.Count > 1)
-                    {
-                        strw.Write("[{0} --> {1}] ", cm.text, cm.confidence);
-                    }
-                    else
-                    {
-                        strw.Write("[{0} --> {1} (U)] ", cm.text, cm.confidence);
-                    }
+                    strw.WriteLine("Nothing detected.");
                 }
+                else
+                {
+                    foreach (Candidate cd in wi.result.candidates)
+                    {
+                        // The last element in the 'matches' list always corresponds to the raw text.
+                        // Therefore, single element lists correspond to unmatched candidates.
 
-                strw.WriteLine();
+                        CountryMatch cm = cd.matches[0];
+
+                        if (cd.matches.Count > 1)
+                        {
+                            strw.Write("[{0} --> {1}] ", cm.text, cm.confidence);
+                        }
+                        else
+                        {
+                            strw.Write("[{0} --> {1} (U)] ", cm.text, cm.confidence);
+                        }
+                    }
+
+                    strw.WriteLine();
+                }
             }
 
             Console.Write("{0}", strw.ToString());
         }
 
-        void doIt(bool bCPU, uint countryId, string srcFolder, string targetFile, string productKey)
+        void ProcessImages(bool bCPU, uint countryId, string srcFolder, string targetFile, string productKey)
         {
-            _results.Clear();
+            _workItems.Clear();
 
-            // Configure the country weights based on the selected country.
+            // Configure country weights based on the selected country
 
             if (countryId >= _lpr.numSupportedCountries)
                 throw new Exception("Invalid country id");
@@ -107,77 +91,74 @@ namespace SimpleLPR_CSharp
 
             _lpr.realizeCountryWeights();
 
-            // Set the product key (if any).
+            // Set the product key (if any)
             if (productKey != null)
                 _lpr.set_productKey(productKey);
 
-            // Initialize the pool of IProcessor.
+            // Initialize the pool of IProcessor with a default number of processors
+            _pool = _lpr.createProcessorPool();
+            _pool.plateRegionDetectionEnabled = true;
+            _pool.cropToPlateRegionEnabled = true;
 
-            int cLogicalCoresPerIProcessor = (bCPU ? 8 : 2);
-            int cIProcessor = (Environment.ProcessorCount + cLogicalCoresPerIProcessor - 1) / cLogicalCoresPerIProcessor;
-
-            _processors.Clear();
-            for (int i = 0; i < cIProcessor; ++i)
-            {
-                IProcessor proc = _lpr.createProcessor();
-                proc.plateRegionDetectionEnabled = true;
-                proc.cropToPlateRegionEnabled = true;
-
-                _processors.Push(proc);
-            }
-
-            // For each image in the source folder ... and subfolders.
+            // For each image in the source folder ... and sub folders
             System.IO.DirectoryInfo dInfo = new System.IO.DirectoryInfo(srcFolder);
             foreach (System.IO.FileInfo f in dInfo.GetFiles("*.*", System.IO.SearchOption.AllDirectories))
             {
-                // Filter out non image files.
+                // Filter out non image files
                 string ext = f.Extension.ToLower();
 
                 if (ext == ".jpg" || ext == ".tif" ||
                      ext == ".png" || ext == ".bmp")
                 {
-                    System.Threading.Monitor.Enter(this);
-                    while (_cPending >= cIProcessor) // Do not exceed 'cIProcessor' simultaneous operations.
-                        System.Threading.Monitor.Wait(this);
-
-                    ++_cPending;
-
-                    // Perform plate recognition by executing the 'process' method as an asynchronous operation.
-                    System.Threading.ThreadPool.QueueUserWorkItem(process, f.FullName);
-
-                    System.Threading.Monitor.Exit(this);
+                    _workItems.Add(new WorkItem { filePath = f.FullName });
+                    _pool.launchAnalyze(streamId: 0,
+                                        requestId: (uint)_workItems.Count - 1,
+                                        timestampInSec: 0.0,
+                                        timeoutInMs: IProcessorPoolConstants.TIMEOUT_INFINITE,
+                                        f.FullName);
+                    for (IProcessorPoolResult result = _pool.pollNextResult(streamId: 0, timeoutInMs: IProcessorPoolConstants.TIMEOUT_IMMEDIATE);
+                         result != null;
+                         result = _pool.pollNextResult(streamId: 0, timeoutInMs: IProcessorPoolConstants.TIMEOUT_IMMEDIATE))
+                    {
+                        WorkItem wi = _workItems[(int)result.requestId];
+                        wi.result = result;
+                        PrintResult(wi);
+                    }
                 }
             }
 
-            // Wait for all operations to complete.
-            System.Threading.Monitor.Enter(this);
-            while (_cPending > 0)
-                System.Threading.Monitor.Wait(this);
-            System.Threading.Monitor.Exit(this);
+            // Process any remaining operations
+            while (_pool.get_ongoingRequestCount(0) > 0)
+            {
+                IProcessorPoolResult result = _pool.pollNextResult(streamId: 0, timeoutInMs: IProcessorPoolConstants.TIMEOUT_INFINITE);
+                WorkItem wi = _workItems[(int)result.requestId];
+                wi.result = result;
+                PrintResult(wi);
+            }
 
-            // Sort the results by file name.
-            _results.Sort(delegate (Result r1, Result r2) { return (r1.filePath.CompareTo(r2.filePath)); });
+            // Sort results by file name.
+            _workItems.Sort(delegate (WorkItem wi1, WorkItem wi2) { return (wi1.filePath.CompareTo(wi2.filePath)); });
 
-            // Write the results to a XML file.
+            // And write them out to a XML file
             XmlDocument xml = new XmlDocument();
             XmlProcessingInstruction basePI = xml.CreateProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
             xml.AppendChild(basePI);
             XmlElement baseElem = xml.CreateElement("results");
             xml.AppendChild(baseElem);
 
-            foreach (Result res in _results)
+            foreach (WorkItem wi in _workItems)
             {
                 XmlElement xmlRes = xml.CreateElement("result");
                 baseElem.AppendChild(xmlRes);
 
                 XmlElement xmlFile = xml.CreateElement("file");
                 xmlRes.AppendChild(xmlFile);
-                xmlFile.SetAttribute("path", res.filePath);
+                xmlFile.SetAttribute("path", wi.filePath);
 
                 XmlElement xmlCds = xml.CreateElement("candidates");
                 xmlRes.AppendChild(xmlCds);
 
-                foreach (Candidate cand in res.lps)
+                foreach (Candidate cand in wi.result.candidates)
                 {
                     XmlElement xmlCd = xml.CreateElement("candidate");
                     xmlCds.AppendChild(xmlCd);
@@ -228,8 +209,7 @@ namespace SimpleLPR_CSharp
         Program(ISimpleLPR lpr)
         {
             _lpr = lpr;
-            _processors = new Stack<IProcessor>();
-            _results = new List<Result>();
+            _workItems = new List<WorkItem>();
         }
 
         static void Main(string[] args)
@@ -248,19 +228,19 @@ namespace SimpleLPR_CSharp
 
                     ISimpleLPR lpr = SimpleLPR.Setup(setupP);
 
-                    // Output the version number
+                    // Output version number
                     VersionNumber ver = lpr.versionNumber;
                     Console.WriteLine("SimpleLPR version {0}.{1}.{2}.{3}", ver.A, ver.B, ver.C, ver.D);
 
                     // Main program logic.
                     Program prg = new Program(lpr);
-                    prg.doIt((setupP.cudaDeviceId) == -1, uint.Parse(args[1]), args[2], args[3], args.Length == 5 ? args[4] : null);
+                    prg.ProcessImages((setupP.cudaDeviceId) == -1, uint.Parse(args[1]), args[2], args[3], args.Length == 5 ? args[4] : null);
                 }
                 else
                 {
                     // Create an instance of the SimpleLPR engine.
                     EngineSetupParms setupP;
-                    setupP.cudaDeviceId = -1; // Select CPU.
+                    setupP.cudaDeviceId = -1; // Select CPU
                     setupP.enableImageProcessingWithGPU = false;
                     setupP.enableClassificationWithGPU = false;
                     setupP.maxConcurrentImageProcessingOps = 0;  // Use the default value.  
@@ -268,7 +248,7 @@ namespace SimpleLPR_CSharp
 
                     ISimpleLPR lpr = SimpleLPR.Setup(setupP);
 
-                    // Output the version number
+                    // Output version number
                     VersionNumber ver = lpr.versionNumber;
                     Console.WriteLine("SimpleLPR version {0}.{1}.{2}.{3}", ver.A, ver.B, ver.C, ver.D);
 
