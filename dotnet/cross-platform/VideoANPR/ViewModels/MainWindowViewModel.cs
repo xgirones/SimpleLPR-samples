@@ -8,15 +8,13 @@ Author: Xavier Gironés (xavier.girones@warelogic.com)
 
 Features:
 - ANPR Processing: VideoANPR utilizes the SimpleLPR ANPR library to perform automatic number plate recognition on video streams.
-- Video Capture: The application uses Emgu.CV as a third-party library for video capture, providing a simple and convenient way
-  to process video frames. However, it can be easily replaced with any other compatible library if desired.
+- Video Capture: The application uses SimpleLPR's native video capture capabilities.
 - Multi-platform User Interface: VideoANPR utilizes Avalonia and ReactiveUI to provide a cross-platform user interface,
   enabling the application to run on both Windows and Linux systems seamlessly.
 
 Requirements:
 - .NET Core SDK 6.0 or higher
 - SimpleLPR ANPR library
-- Emgu.CV (or alternative third-party library for video capture)
 - Avalonia and ReactiveUI
 
 Contributions and feedback are welcome! If you encounter any issues, have suggestions for improvements, or want to add new features,
@@ -41,10 +39,13 @@ using SimpleLPR3;
 using System;
 using System.Diagnostics;
 using VideoANPR.Observables;
+using VideoANPR.Services;
 using System.Reactive.Concurrency;
 using DynamicData.Binding;
 using Avalonia.Controls;
-using System.ComponentModel;
+using Avalonia.Platform.Storage;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace VideoANPR.ViewModels
 {
@@ -58,19 +59,16 @@ namespace VideoANPR.ViewModels
         /// </summary>
         public struct SelectFileDialogParms
         {
-            public string DefaultFileName;          // Default file name for the file dialog
-            public List<FileDialogFilter> Filters;  // List of file filters for the file dialog
+            public List<FilePickerFileType> Filters;  // List of file filters for the file dialog
             public string Title;                    // Title of the file dialog
 
             /// <summary>
             /// Initializes a new instance of the <see cref="SelectFileDialogParms"/> struct.
             /// </summary>
-            /// <param name="defaultFileName">The default file name for the file dialog.</param>
             /// <param name="filters">The list of file filters for the file dialog.</param>
             /// <param name="title">The title of the file dialog.</param>
-            public SelectFileDialogParms(string defaultFileName, List<FileDialogFilter> filters, string title)
+            public SelectFileDialogParms(List<FilePickerFileType> filters, string title)
             {
-                DefaultFileName = defaultFileName;
                 Filters = filters;
                 Title = title;
             }
@@ -78,6 +76,9 @@ namespace VideoANPR.ViewModels
 
         // Represents an interaction for selecting a file
         public static Interaction<SelectFileDialogParms, string> SelectFile { get; } = new Interaction<SelectFileDialogParms, string>();
+
+        // Represents an interaction for selecting a folder.
+        public static Interaction<string, string> SelectFolder { get; } = new Interaction<string, string>();
 
         // Represents an interaction for handling unhandled exceptions
         public static Interaction<Exception, Unit> UnhandledException { get; } = new Interaction<Exception, Unit>();
@@ -101,17 +102,20 @@ namespace VideoANPR.ViewModels
 
         #region Backing fields and private stuff      
         private ISimpleLPR? lpr_ = null;  // Instance of ISimpleLPR for license plate recognition
-        private readonly List<IProcessor> processors_ = new List<IProcessor>(); // List of SimpleLPR processors for license plate recognition
+        private IProcessorPool? processorPool_ = null; // Processor pool for license plate recognition
+        private IPlateCandidateTracker? plateTracker_ = null; // Tracker to track license plate candidates across video frames
         private bool trialModeEnabled_ = false;  // Flag indicating if the software is running in trial mode
         private bool validKey_ = false;  // Flag indicating if a valid registration key is provided
 
-        private Emgu.CV.VideoCapture? videoCapture_ = null;  // Video capture device
+        private IVideoSource? videoSource_ = null;   // The video source for acquiring frames
         private IDisposable? dispSimpleLPR_ = null;  // Disposable object for handling the SimpleLPR frame pipeline
-        private IDisposable? dispPlateAggr_ = null;  // Disposable object for handling license plate aggregation pipeline
 
         private readonly SourceList<LicensePlateViewModel> lpList_ = new SourceList<LicensePlateViewModel>();  // Source list of detected license plate view models
         // The observable collection of license plate view models associated to lpList_
         private readonly IObservableCollection<LicensePlateViewModel> lpColl_ = new ObservableCollectionExtended<LicensePlateViewModel>();
+
+        // Service responsible for logging tracked plates to disk.
+        private readonly PlateLoggingService plateLoggingService_ = new PlateLoggingService();
         #endregion
 
         #region Normal properties
@@ -143,6 +147,15 @@ namespace VideoANPR.ViewModels
 
         [Reactive]
         public string RegistrationKeyPath { get; set; } = string.Empty;   // Path to the registration key file
+
+        [Reactive]
+        public bool LoggingEnabled { get; set; } = false;  // Logging is disabled by default
+
+        [Reactive]
+        public string OutputFolderPath { get; set; } = string.Empty;
+
+        [Reactive]
+        public bool OutputFolderPathValidated { get; set; } = false;  // Flag indicating if the output folder path has been validated
         #endregion
 
         #region OAPHs        
@@ -150,6 +163,7 @@ namespace VideoANPR.ViewModels
         public Brush ConfigEnabledColorBrush { [ObservableAsProperty] get; } = new SolidColorBrush();   // Color brush for the configuration enabled state
         public bool RegKeyEnabled { [ObservableAsProperty] get; }  // Flag indicating if the controls associated to the registration key input are to be enabled
         public bool PlayContinueEnabled { [ObservableAsProperty] get; }  // Flag indicating if the play/continue user interface is to be enabled
+        public bool LoggingConfigEnabled { [ObservableAsProperty] get; } // Flag indicating if the controls associated to candidate logging are to be enabled
         #endregion
 
         #region Reactive commands
@@ -160,6 +174,7 @@ namespace VideoANPR.ViewModels
         public ReactiveCommand<Unit, Unit> CmdPauseClicked { get; }  // Command for handling pause
         public ReactiveCommand<Unit, Unit> CmdStopClicked { get; }   // Command for handling stop
         public ReactiveCommand<Unit, Unit> CmdExitClicked { get; }   // Command for handling user initiated application exit
+        public ReactiveCommand<Unit, Unit> CmdSelectOutputFolderClicked { get; } // Command for output folder selection
         #endregion
 
         #region Interactions
@@ -170,88 +185,104 @@ namespace VideoANPR.ViewModels
 
         #region Validation context
         // A validation context object used for performing validation on data.
-        public ValidationContext ValidationContext { get; } = new ValidationContext();
+        public IValidationContext ValidationContext { get; } = new ValidationContext();
         #endregion
 
         #region Private methods
         /// <summary>
-        /// Tries to set up the processors for license plate recognition.
+        /// Attempts to initialize the processor pool and plate tracker.
         /// </summary>
-        /// <returns><c>true</c> if the processors were successfully initialized, <c>false</c> otherwise.</returns>
+        /// <returns>True if initialization was successful, false otherwise.</returns>
         bool TrySetupProcessors()
         {
-            if (this.LPR != null)
+            // Check if the SimpleLPR engine is available and the processor pool hasn't been created yet
+            if (this.LPR != null && processorPool_ == null)
             {
                 try
                 {
-                    while ((uint)processors_.Count < NUM_PROCESSORS)
-                    {
-                        // Attempt to create a new processor instance. Throws an exception if a registration key is required.
-                        IProcessor proc = this.LPR.createProcessor();
+                    // Create a processor pool with NUM_PROCESSORS processors
+                    // This will fail if not in trial mode and no valid license key has been provided
+                    processorPool_ = this.LPR.createProcessorPool(NUM_PROCESSORS);
 
-                        // Set the plate region detection and crop settings for the processor.
-                        proc.plateRegionDetectionEnabled = this.PlateRegionDetectionEnabled;
-                        proc.cropToPlateRegionEnabled = this.CropToPlateRegionEnabled;
+                    // Configure the processor pool settings
+                    processorPool_.plateRegionDetectionEnabled = this.PlateRegionDetectionEnabled;
+                    processorPool_.cropToPlateRegionEnabled = this.CropToPlateRegionEnabled;
 
-                        // Add the created processor to the processors pool.
-                        processors_.Add(proc);
-                    }
+                    // Create a plate tracker with default parameters
+                    var trackerParams = PlateCandidateTrackerSetupParms.Default;
+                    plateTracker_ = this.LPR.createPlateCandidateTracker(trackerParams);
                 }
                 catch (Exception)
                 {
-                    // Ignore the exception, typically raised when a registration key is required.
+                    // If initialization fails (usually due to licensing), clean up any partially created resources
+                    if (processorPool_ != null)
+                    {
+                        processorPool_.Dispose();
+                        processorPool_ = null;
+                    }
+
+                    if (plateTracker_ != null)
+                    {
+                        plateTracker_.Dispose();
+                        plateTracker_ = null;
+                    }
                 }
             }
 
-            // Check if the number of initialized processors matches the desired number.
-            this.ProcessorsInitialized = (uint)processors_.Count == NUM_PROCESSORS;
-
-            // Return whether the processors were successfully initialized.
+            // Update the initialization status and return it
+            this.ProcessorsInitialized = processorPool_ != null && plateTracker_ != null;
             return this.ProcessorsInitialized;
         }
 
         /// <summary>
-        /// Sets up the SimpleLPR ANPR engine.
+        /// Sets up the SimpleLPR ANPR engine and initializes the processor pool and plate tracker.
         /// </summary>
         /// <returns>A disposable object that performs cleanup actions when disposed.</returns>
         private IDisposable SetupLPR()
         {
-            // Setup the ANPR engine
-
+            // Initialize engine setup parameters
             EngineSetupParms setupP;
-            setupP.cudaDeviceId = -1; // Select CPU
-            setupP.enableImageProcessingWithGPU = false;
-            setupP.enableClassificationWithGPU = false;
-            setupP.maxConcurrentImageProcessingOps = 0;  // Use the default value. 
+            setupP.cudaDeviceId = -1;                    // Use CPU mode instead of GPU
+            setupP.enableImageProcessingWithGPU = false; // Disable GPU for image processing
+            setupP.enableClassificationWithGPU = false;  // Disable GPU for classification
+            setupP.maxConcurrentImageProcessingOps = 0;  // Use default value for concurrent operations
 
-            // Setup the ANPR engine with the specified parameters.
+            // Create the SimpleLPR engine instance with the specified parameters
             lpr_ = SimpleLPR.Setup(setupP);
 
-            // Set the weight of supported countries to 0 initially.
+            // Initially set the weight of all countries to 0 (disabled)
             for (uint i = 0; i < lpr_.numSupportedCountries; i++)
             {
                 lpr_.set_countryWeight(i, 0);
             }
 
-            // Try to setup processors without providing a registration key, and enable trial mode if successful.
+            // Try to initialize the processor pool and plate tracker
+            // This will succeed without a license key during the trial period
             if (TrySetupProcessors())
             {
                 trialModeEnabled_ = true;
                 RegistrationKeyPath = "NO KEY REQUIRED";
             }
 
-            // Return a disposable object that performs cleanup actions when disposed.
+            // Return a disposable to clean up resources when disposed
             return Disposable.Create(
                 () =>
                 {
-                    // Dispose all the processors and clear the list.
-                    foreach (IProcessor proc in processors_)
+                    // Clean up the plate tracker
+                    if (plateTracker_ != null)
                     {
-                        proc.Dispose();
+                        plateTracker_.Dispose();
+                        plateTracker_ = null;
                     }
-                    processors_.Clear();
 
-                    // Dispose the ANPR engine and set its reference to null.
+                    // Clean up the processor pool
+                    if (processorPool_ != null)
+                    {
+                        processorPool_.Dispose();
+                        processorPool_ = null;
+                    }
+
+                    // Clean up the SimpleLPR engine
                     lpr_.Dispose();
                     lpr_ = null;
                 });
@@ -288,11 +319,16 @@ namespace VideoANPR.ViewModels
             this.WhenAnyValue(x => x.ProcessorsInitialized, x => !x)
                .ToPropertyEx(this, x => x.RegKeyEnabled);
 
-            // True when the ProcessorsInitialized is true, VideoPath is valid and the playback status is Stopped, or the playback status is Paused.
-            this.WhenAnyValue(x => x.ProcessorsInitialized, y => y.VideoPath, z => z.CurrentPlaybackStatus,
-                              (x, y, z) => (x && !string.IsNullOrWhiteSpace(y) && z == PlaybackStatus.Stopped) ||
+            // True when the ProcessorsInitialized is true, VideoPath and OutputFolderPathValidated are valid and the playback status is Stopped, or the playback status is Paused.
+            this.WhenAnyValue(x => x.ProcessorsInitialized, y => y.VideoPath, w => w.OutputFolderPathValidated, z => z.CurrentPlaybackStatus,
+                              (x, y, w, z) => (x && !string.IsNullOrWhiteSpace(y) && w && z == PlaybackStatus.Stopped) ||
                                            z == PlaybackStatus.Paused)
                .ToPropertyEx(this, x => x.PlayContinueEnabled);
+
+            // Logging configuration is enabled when general configuration is enabled, and the logging checkbox is enabled.
+            this.WhenAnyValue(x => x.ConfigEnabled, y => y.LoggingEnabled,
+                             (x, y) => x && y)
+                .ToPropertyEx(this, x => x.LoggingConfigEnabled);
         }
 
         /// <summary>
@@ -304,36 +340,47 @@ namespace VideoANPR.ViewModels
             // The rule checks if trial mode is enabled or a valid key exists at the specified path.
             // If the rule fails, the error message "PLEASE SPECIFY A VALID PATH" is shown.
             this.ValidationRule(
-                x => x.RegistrationKeyPath,
+                x => x.RegistrationKeyPath,            // Property to validate
                 path =>
                 {
+                    // Path is valid if:
+                    // 1. Trial mode is enabled (no key needed)
+                    // 2. A valid key has already been loaded
+                    // 3. The file at the specified path exists
                     return trialModeEnabled_ || validKey_ || System.IO.File.Exists(path);
                 },
-                "PLEASE SPECIFY A VALID PATH");
+                "PLEASE SPECIFY A VALID PATH");        // Error message if validation fails
 
             // Create another validation rule for the RegistrationKeyPath property.
             // The rule checks if the key is valid so far, and if not, attempts to set the product key using the specified path.
             // If the key is valid, it sets the validKey_ flag to true.
             // If the rule fails, the error message "THE SUPPLIED KEY IS INVALID" is shown.
             this.ValidationRule(
-                x => x.RegistrationKeyPath,
+                x => x.RegistrationKeyPath,            // Property to validate
                 path =>
                 {
+                    // Key is valid if:
+                    // 1. Trial mode is enabled (no key needed)
+                    // 2. A valid key has already been loaded
                     bool bIsValidKeySoFar = trialModeEnabled_ || validKey_;
 
+                    // If we haven't confirmed a valid key yet, try to load one
                     if (!bIsValidKeySoFar)
                     {
+                        // Check if the file exists
                         bIsValidKeySoFar = System.IO.File.Exists(path);
 
                         if (bIsValidKeySoFar)
                         {
                             try
                             {
+                                // Try to set the product key
                                 lpr_?.set_productKey(path);
-                                validKey_ = true;
+                                validKey_ = true;  // Mark key as valid if successful
                             } 
                             catch (Exception) 
-                            { 
+                            {
+                                // Key loading failed
                                 bIsValidKeySoFar = false; 
                             }
                         }
@@ -342,124 +389,205 @@ namespace VideoANPR.ViewModels
                     return bIsValidKeySoFar;
                 },
                 "THE SUPPLIED KEY IS INVALID");
+
+            // Validation rule for output folder path
+            this.ValidationRule(
+                vm => vm.OutputFolderPath,
+                this.WhenAnyValue(
+                    x => x.OutputFolderPath,
+                    y => y.LoggingConfigEnabled,
+                    (path, enabled) =>
+                    {
+                        // Path is valid if:
+                        // 1. LoggingConfig is disabled (no validation needed)
+                        // 2. Path points to an existing directory
+
+                        bool bValidated = !enabled;
+
+                        if (!bValidated)
+                        {
+                            try
+                            {
+                                // Check if directory exists
+                                bValidated = Directory.Exists(path);
+                            }
+                            catch { }
+                        }
+
+                        OutputFolderPathValidated = bValidated;
+                        return bValidated;
+                    }),
+                "PLEASE SPECIFY A VALID FOLDER PATH");
         }
 
         /// <summary>
-        /// Starts the video capture process.
+        /// Starts the video capture process and sets up the processing pipeline.
         /// </summary>
+        /// <exception cref="ArgumentException">Thrown when the video source cannot be opened.</exception>
         private void StartCapture()
         {
-            // Assert that the necessary objects are not null before starting the capture.
-            Debug.Assert(lpr_ is not null);
-            Debug.Assert(videoCapture_ is null);
-            Debug.Assert(this.dispSimpleLPR_ is null);
+            // Verify that the required components are properly initialized and in the expected state
+            Debug.Assert(lpr_ is not null, "SimpleLPR engine must be initialized");
+            Debug.Assert(processorPool_ is not null, "Processor pool must be initialized");
+            Debug.Assert(plateTracker_ is not null, "Plate tracker must be initialized");
+            Debug.Assert(videoSource_ is null, "Video source should be null when starting capture");
+            Debug.Assert(this.dispSimpleLPR_ is null, "Processing pipeline should be null when starting capture");
 
-            // Clear the license plate list and realize the country weights selected through the UI.
+            // Clear any previously detected license plates
             lpList_.Clear();
+
+            // Apply the country weights selected in the UI to the SimpleLPR engine
+            // This must be called after changing country weights and before processing
             lpr_.realizeCountryWeights();
 
-            // Create a new video capture using the specified VideoPath.
-            videoCapture_ = new Emgu.CV.VideoCapture(this.VideoPath, Emgu.CV.VideoCapture.API.Ffmpeg);
+            // Open the video source from the specified path
+            // The API takes the file path, desired frame format, and optional max width/height constraints
+            // Using BGR24 format and no size restrictions (-1, -1)
+            videoSource_ = lpr_.openVideoSource(this.VideoPath, FrameFormat.FRAME_FORMAT_BGR24, -1, -1);
 
-            // Check if the video capture is successfully opened.
-            if (!videoCapture_.IsOpened)
+            // Verify that the video source was opened successfully
+            if (videoSource_.state != VideoSourceState.VIDEO_SOURCE_STATE_OPEN)
             {
-                // Dispose the video capture object and set it to null.
-                videoCapture_.Dispose();
-                videoCapture_ = null;
+                // Clean up if opening failed
+                videoSource_.Dispose();
+                videoSource_ = null;
 
-                // Throw an ArgumentException indicating the inability to open the video source.
                 throw new ArgumentException("Unable to open video source");
             }
 
-            // Create observables for pause status and SimpleLPR processing.
+            // Configure the plate logging service
+            plateLoggingService_.LoggingEnabled = this.LoggingEnabled && this.OutputFolderPathValidated;
+            plateLoggingService_.OutputDirectory = this.OutputFolderPath;
+
+            // Create an observable for the pause state
+            // This will emit true when paused, false when playing
+            // Using WhenAnyValue to react to changes in the CurrentPlaybackStatus property
             var obPaused = this.WhenAnyValue(x => x.CurrentPlaybackStatus, x => x == PlaybackStatus.Paused);
-            var obSimpleLPR = this.videoCapture_
-                .ToObservable(scheduler: new EventLoopScheduler(), obPaused: obPaused)
-                .ToSimpleLPR(pcs: this.processors_, scheduler: RxApp.TaskpoolScheduler, bExhaustive: true)
-                .ObserveOn(new EventLoopScheduler())
-                .Publish()
-                .RefCount();
 
-            // Set up the subscription for processing individual frames.
-            this.dispSimpleLPR_ = obSimpleLPR
-                .Catch(Observable.Empty<FrameResultLPR>()) // Swallow any incoming exceptions since they will be processed by the 'long' branch of the pipeline.                
-                .Do(elem =>
-                    {
-                        // Handle the new frame using the OnNewFrame interaction.
-                        this.OnNewFrame.Handle(elem).Subscribe().Dispose();
-                    })
+            // Set up the video processing pipeline:
+            // This reactive pipeline processes frames from the video source through several stages
+            dispSimpleLPR_ = videoSource_
+                .ToObservable(obPaused)                           // 1. Convert video frames to reactive stream
+                .ToSimpleLPR(processorPool_)                      // 2. Process frames with ANPR engine
+                .AggregateIntoRepresentatives(plateTracker_)      // 3. Track plates across multiple frames                
                 .Subscribe(
-                    // Elements already handled in the previous stage.
-                    elem => { },
-                    // Exception handler, used only for exceptions arising in the previous stage.
-                    ex =>
+                    // OnNext handler - Process each aggregated result
+                    aggregatedResult =>
                     {
-                        // Handle the unhandled exception using the SharedInteractions.UnhandledException interaction.
-                        SharedInteractions.UnhandledException.Handle(ex).Subscribe().Dispose();
+                        // Display the frame in the UI if available
+                        // This includes the original frame and any detected candidates
+                        if (aggregatedResult.FrameResult != null)
+                        {
+                            // Use interaction to handle the frame display in the view
+                            // This allows the view to update without direct coupling
+                            this.OnNewFrame.Handle(aggregatedResult.FrameResult).Subscribe().Dispose();
+                        }
 
-                        // Execute the CmdStopClicked command programmatically.
-                        this.CmdStopClicked?.Execute().Subscribe().Dispose();
-                    });
+                        // Process any new tracked license plates that have been identified
+                        if (aggregatedResult.TrackerResult != null)
+                        {
+                            // Iterate through new tracks that met the tracking criteria
+                            foreach (var track in aggregatedResult.TrackerResult.NewTracks)
+                            {
+                                // Only create view models for tracks with thumbnails and valid plate text
+                                // The thumbnail should be available from the representative frame
+                                if (track.representativeThumbnail != null &&
+                                    track.representativeCandidate.matches.Count > 0)
+                                {
+                                    // Add the new plate to the beginning of the list
+                                    // This creates a view model directly from the tracked plate
+                                    lpList_.Insert(0, new LicensePlateViewModel(track));
+                                }
+                            }
 
-            // Set up the subscription for aggregating license plate results.
-            this.dispPlateAggr_ = obSimpleLPR
-                .AggregateIntoRepresentatives(triggerWindow: TimeSpan.FromSeconds(3),
-                                              maxIdleTime: TimeSpan.FromSeconds(2),
-                                              disposeInputFrames: true,
-                                              discardNonLPCandidates: this.PlateRegionDetectionEnabled || this.CropToPlateRegionEnabled)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Do(elem =>
-                    {
-                        // Create a new LicensePlateViewModel for the aggregated result and add it to the license plate list.
-                        lpList_.Insert(0, new LicensePlateViewModel(elem));
-                        elem.Frame.Dispose();
-                    })
-                .Subscribe(
-                    // Elements already handled in the previous stage.
-                    elem => { },
-                    // Exception handler
-                    ex =>
-                    {
-                        // Handle the unhandled exception using the SharedInteractions.UnhandledException interaction.
-                        SharedInteractions.UnhandledException.Handle(ex).Subscribe().Dispose();
+                            // Log the closed track asynchronously
+                            // We don't await this to avoid blocking the current thread
+                            Task.Run(async () =>
+                            {
+                                // Handle closed tracks (these appear when tracking ends for a plate)
+                                // This is where we perform logging
+                                foreach (var track in aggregatedResult.TrackerResult.ClosedTracks)
+                                {
+                                    try
+                                    {
+                                        await plateLoggingService_.LogTrackedPlateAsync(track, this.VideoPath);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        // Log error but don't crash the application
+                                        System.Diagnostics.Debug.WriteLine($"Failed to log tracked plate: {ex.Message}");
+                                    }
+                                  }
 
-                        // Execute the CmdStopClicked command programmatically.
-                        this.CmdStopClicked?.Execute().Subscribe().Dispose();
+                                // Clean up the tracker result when done
+                                // This is important to avoid memory leaks
+                                aggregatedResult.TrackerResult.Dispose();
+                            });
+                        }
+
+                        // Clean up the frame result resources if available
+                        // This is important to avoid memory leaks with video frames
+                        if (aggregatedResult.FrameResult != null)
+                        {
+                            aggregatedResult.FrameResult.Frame.Dispose();
+                            aggregatedResult.FrameResult.Result.Dispose();
+                        }
                     },
-                    // Completion handler
+                    // OnError handler - Handle any pipeline errors
+                    ex =>
+                    {
+                        // Show error to the user through the interaction
+                        SharedInteractions.UnhandledException.Handle(ex).Subscribe().Dispose();
+
+                        // This ensures thread safety and synchronization with the UI
+                        RxApp.MainThreadScheduler.Schedule(_ =>
+                        {
+                            // Stop the video capture by triggering the stop command
+                            this.CmdStopClicked?.Execute().Subscribe().Dispose();
+                        });
+                    },
+                    // OnCompleted handler - Called when the video source reaches the end
                     () =>
                     {
-                        // Execute the CmdStopClicked command programmatically.
-                        this.CmdStopClicked?.Execute().Subscribe().Dispose();
+                        // This ensures thread safety and synchronization with the UI
+                        RxApp.MainThreadScheduler.Schedule(_ =>
+                        {
+                            // Stop the video capture by triggering the stop command
+                            this.CmdStopClicked?.Execute().Subscribe().Dispose();
+                        });
                     });
         }
 
         /// <summary>
-        /// Ends the capture process.
+        /// Stops the video capture process and cleans up resources.
         /// </summary>
         private void StopCapture()
         {
-            // Dispose the dispPlateAggr_ subscription if it exists.
-            if (dispPlateAggr_ is not null)
-            {
-                dispPlateAggr_.Dispose();
-                dispPlateAggr_ = null;
-            }
-
-            // Dispose the dispSimpleLPR_ subscription if it exists.
+            // Clean up the processing pipeline subscription
             if (dispSimpleLPR_ is not null)
             {
+                // Disposing the subscription will:
+                // 1. Unsubscribe from the observable
+                // 2. Clean up any pending operations
+                // 3. Release associated resources
+                // 4. Run the cleanup code in the Disposable.Create call
                 dispSimpleLPR_.Dispose();
                 dispSimpleLPR_ = null;
             }
 
-            // Dispose the videoCapture_ object if it exists.
-            if (videoCapture_ is not null)
+            // Clean up the video source
+            if (videoSource_ is not null)
             {
-                videoCapture_.Dispose();
-                videoCapture_ = null;
+                // Disposing the video source will:
+                // 1. Close the video file or camera
+                // 2. Release associated resources
+                // 3. Free native memory
+                videoSource_.Dispose();
+                videoSource_ = null;
             }
+
+            // Note: We don't dispose of the processor pool or plate tracker here
+            // as they can be reused for subsequent video captures
         }
         #endregion
 
@@ -484,10 +612,9 @@ namespace VideoANPR.ViewModels
                 () => SharedInteractions
                     .SelectFile
                     .Handle(new SharedInteractions.SelectFileDialogParms(
-                        defaultFileName: "video", 
-                        filters: new List<FileDialogFilter>{
-                                        new FileDialogFilter{ Name="Video Files", Extensions=new List<string>{"mp4", "avi"} },
-                                        new FileDialogFilter{ Name="All Files", Extensions=new List<string>{"*"} } },
+                        filters: new List<FilePickerFileType>{
+                                        new FilePickerFileType(name:"Video Files") { Patterns = new List<string>{"*.mp4", "*.avi"} },
+                                        new FilePickerFileType(name:"All Files") { Patterns = new List<string>{"*"} } },
                         title: "Select Video File"))
                     .Where(result => !string.IsNullOrWhiteSpace(result))
                     .Select(result => result.Trim())
@@ -501,10 +628,9 @@ namespace VideoANPR.ViewModels
                 () => SharedInteractions
                     .SelectFile
                     .Handle(new SharedInteractions.SelectFileDialogParms(
-                        defaultFileName: "key",
-                        filters: new List<FileDialogFilter>{
-                                        new FileDialogFilter{ Name="XML documents", Extensions=new List<string>{"xml"} },
-                                        new FileDialogFilter{ Name="All Files", Extensions=new List<string>{"*"} } },
+                        filters: new List<FilePickerFileType>{
+                                        new FilePickerFileType(name:"XML documents") { Patterns = new List<string>{"*.xml"} },
+                                        new FilePickerFileType(name:"All Files") { Patterns = new List<string>{"*.*"} } },
                         title: "Select License Key File"))
                     .Where(result => !string.IsNullOrWhiteSpace(result))
                     .Select(result => result.Trim())
@@ -535,7 +661,7 @@ namespace VideoANPR.ViewModels
             // Command for stopping the video capture.
             this.CmdStopClicked = ReactiveCommand.Create(() =>
                 {
-                    Debug.Assert(videoCapture_ is not null);
+                    Debug.Assert(videoSource_ is not null);
                     Debug.Assert(this.dispSimpleLPR_ is not null);
 
                     StopCapture();
@@ -549,6 +675,18 @@ namespace VideoANPR.ViewModels
                 () => SharedInteractions
                     .ConfirmedExit
                     .Handle("Are you sure you want to quit the application?"));
+
+            // Command for selecting output folder
+            this.CmdSelectOutputFolderClicked = ReactiveCommand.CreateFromObservable(
+                () => SharedInteractions
+                    .SelectFolder
+                    .Handle("Select Output Folder for Logged Plates")
+                    .Where(result => !string.IsNullOrWhiteSpace(result))
+                    .Select(result => result.Trim())
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Do(result => this.OutputFolderPath = result)
+                    .Select(result => Unit.Default),
+                this.WhenAnyValue(x => x.LoggingConfigEnabled));
             #endregion
 
             // Activation logic for the view model.
@@ -557,6 +695,7 @@ namespace VideoANPR.ViewModels
                 // Monitor changes to the RegistrationKeyPath and initialize processors if a valid key exists.
                 this.WhenAnyValue(x => x.RegistrationKeyPath, x => !this.trialModeEnabled_ && !string.IsNullOrWhiteSpace(x))
                     .Where(x => x)
+                    // If we have a valid key or are in trial mode but processors aren't initialized, try to initialize them
                     .Do(_ => { if ((trialModeEnabled_ || validKey_) && !this.ProcessorsInitialized) TrySetupProcessors(); })
                     .Subscribe()
                     .DisposeWith(disposables);
@@ -565,10 +704,10 @@ namespace VideoANPR.ViewModels
                 this.WhenAnyValue(x => x.PlateRegionDetectionEnabled, y => y.CropToPlateRegionEnabled)
                     .Do(x =>
                     {
-                        foreach (IProcessor proc in this.processors_)
+                        if (processorPool_ != null)
                         {
-                            proc.plateRegionDetectionEnabled = x.Item1;
-                            proc.cropToPlateRegionEnabled = x.Item2;
+                            processorPool_.plateRegionDetectionEnabled = x.Item1;
+                            processorPool_.cropToPlateRegionEnabled = x.Item2;
                         }
                     })
                     .Subscribe()
@@ -582,6 +721,12 @@ namespace VideoANPR.ViewModels
 
                 // Handle exceptions thrown by CmdPlayContinueClicked.
                 this.CmdPlayContinueClicked.ThrownExceptions
+                    .SelectMany(ex => SharedInteractions.UnhandledException.Handle(ex))
+                    .Subscribe()
+                    .DisposeWith(disposables);
+
+                // Handle exceptions from logging commands
+                this.CmdSelectOutputFolderClicked.ThrownExceptions
                     .SelectMany(ex => SharedInteractions.UnhandledException.Handle(ex))
                     .Subscribe()
                     .DisposeWith(disposables);

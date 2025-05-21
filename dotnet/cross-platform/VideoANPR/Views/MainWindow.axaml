@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:rxui="http://reactiveui.net"
         xmlns:uc="clr-namespace:VideoANPR.Views;assembly=VideoANPR"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="780"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="815"
         x:Class="VideoANPR.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Height="780" Width="800" CanResize="false"
+        Height="815" Width="800" CanResize="false"
         Icon="/Assets/SimpleLPR-logo.ico"
         Title="VideoANPR">
   <Design.DataContext>
@@ -51,7 +51,7 @@
       </Label>
       <ListBox Grid.Column="1" Name="LB_EnabledCountries" VerticalAlignment="Top"
                ScrollViewer.HorizontalScrollBarVisibility="Visible"
-               ToolTip.Tip="Specify the target countries where the license plates are expected to be from.&#x0a;Enabling syntax validation may improve the accuracy of the results.">
+               ToolTip.Tip="Specify the target countries where the license plates are expected to be from. Enabling syntax validation may improve the accuracy of the results.">
         <ListBox.ItemsPanel>
           <ItemsPanelTemplate>
             <StackPanel Orientation="Horizontal"/>
@@ -61,6 +61,7 @@
     </Grid>
     <Grid Margin="5,10,5,0">
       <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
@@ -74,6 +75,7 @@
       <Label Name="Label_InputVideo" Grid.Row="0" Grid.Column="0" Content="Input Video:" Margin="0,0,2,0" VerticalAlignment="Center"/>
       <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
         <TextBox Name="TB_InputVideo" Width="200" Margin="0,0,2,0" VerticalAlignment="Center"
+                 Watermark="Enter URI of the video source..."
                  ToolTip.Tip="Please specify the location of the input video file. Alternatively, you can provide a RTSP stream URL as the source."/>
         <Button Name="Button_SelectVideo" Content="···" Margin="0,0,10,0" Width="NaN"
                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
@@ -82,20 +84,34 @@
       </StackPanel>
       <Label Name="Label_RegistrationKey" Grid.Row="0" Grid.Column="2" Content="Product Key:" Margin="0,0,2,0" VerticalAlignment="Center"/>
       <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-        <TextBox Name="TB_RegistrationKey" Width="200" Margin="0,0,2,0" VerticalAlignment="Center"                  
+        <TextBox Name="TB_RegistrationKey" Width="200" Margin="0,0,2,0" VerticalAlignment="Center"
+                 Watermark="Enter path of the product key..."
                  ToolTip.Tip="Please provide the path to the file containing the product registration key. You may leave this field blank during the evaluation period."/>
         <Button Name="Button_SelectKey" Content="···" Margin="0,0,0,0" Width="NaN"
                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                 Height="{Binding #TB_RegistrationKey.Bounds.Height}" VerticalAlignment="Center"
-                ToolTip.Tip="Click here to open a file dialog and specify the&#x0a;path to the file that contains the product registration key."/>
-      </StackPanel>
-      <StackPanel Grid.Row="0" Grid.Column="4" Grid.RowSpan="2" Margin="10,-5,0,0" VerticalAlignment="Top">
+                ToolTip.Tip="Click here to open a file dialog and specify the path to the file that contains the product registration key."/>
+      </StackPanel>      
+      <StackPanel Grid.Row="0" Grid.Column="4" Grid.RowSpan="3" Margin="10,-5,0,0" VerticalAlignment="Top">
         <CheckBox Name="CB_PlateRegionDetection" Content="Detect Plate Region"  Margin="0,0,0,0"
                   ToolTip.Tip="Enable enhanced license plate detection logic to improve the accuracy of candidate identification, and reject irrelevant candidates."/>
         <CheckBox Name="CB_CropToPlateRegion" Content="Crop To Plate Region" Margin="0,-10,0,0"
-                  ToolTip.Tip="Use this option to crop the localized text to fit within the boundaries of the enclosing license plate frame.&#x0a;This can potentially enhance the accuracy of the OCR process."/>
+                  ToolTip.Tip="Use this option to crop the localized text to fit within the boundaries of the enclosing license plate frame. This can potentially enhance the accuracy of the OCR process."/>
+        <CheckBox Name="CB_EnableLogging" Content="Enable Plate Logging" Margin="0,-10,0,0"
+                  ToolTip.Tip="When enabled, each detected license plate will be saved as a JPEG image with accompanying JSON metadata file containing recognition details, timestamps, and confidence scores."/>
       </StackPanel>
       <Label Name="Label_RegKeyErrors" Grid.Row="1" Grid.Column="3" Content="" Foreground="Red" VerticalAlignment="Top" Margin="0,0,0,0" HorizontalAlignment="Left"/>
+      <Label Name="Label_OutputFolder" Grid.Row="1" Grid.Column="0" Content="Output Folder:" Margin="0,0,2,0" VerticalAlignment="Center"/>
+      <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+        <TextBox Name="TB_OutputFolder" Width="200" Margin="0,0,2,0" VerticalAlignment="Center"
+                 Watermark="Select folder to save plate logs..."
+                 ToolTip.Tip="Enter the full path to the output directory, or use the Browse button to select a folder."/>
+        <Button Name="Button_SelectOutputFolder" Content="···" Margin="0,0,10,0" Width="NaN"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                Height="{Binding #TB_RegistrationKey.Bounds.Height}" VerticalAlignment="Center"                
+                ToolTip.Tip="Open a folder selection dialog to choose where to save the logged license plate files."/>
+      </StackPanel>
+      <Label Name="Label_OutputFolderErrors" Grid.Row="2" Grid.Column="1" Content="" Foreground="Red" VerticalAlignment="Top" Margin="0,0,0,0" HorizontalAlignment="Left"/>
     </Grid>
     <Grid Margin="10,5,20,0">
       <Grid.ColumnDefinitions>

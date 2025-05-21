@@ -9,6 +9,6 @@
     <x:Double x:Key="ControlContentThemeFontSize">12</x:Double>
   </Application.Resources>
   <Application.Styles>
-    <FluentTheme Mode="Light"/>
+    <FluentTheme/>
   </Application.Styles>
 </Application>

@@ -8,15 +8,13 @@ Author: Xavier Gironés (xavier.girones@warelogic.com)
 
 Features:
 - ANPR Processing: VideoANPR utilizes the SimpleLPR ANPR library to perform automatic number plate recognition on video streams.
-- Video Capture: The application uses Emgu.CV as a third-party library for video capture, providing a simple and convenient way
-  to process video frames. However, it can be easily replaced with any other compatible library if desired.
+- Video Capture: The application uses SimpleLPR's native video capture capabilities.
 - Multi-platform User Interface: VideoANPR utilizes Avalonia and ReactiveUI to provide a cross-platform user interface,
   enabling the application to run on both Windows and Linux systems seamlessly.
 
 Requirements:
 - .NET Core SDK 6.0 or higher
 - SimpleLPR ANPR library
-- Emgu.CV (or alternative third-party library for video capture)
 - Avalonia and ReactiveUI
 
 Contributions and feedback are welcome! If you encounter any issues, have suggestions for improvements, or want to add new features,
