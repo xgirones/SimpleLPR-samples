@@ -1,0 +1,152 @@
+<Window x:Class="VideoANPR.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VideoANPR.Views"
+        mc:Ignorable="d"
+        Title="SimpleLPR Video Capture Demo" Height="700" Width="1100" MinHeight="700" MinWidth="1100">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Video Canvas -->
+            <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1" Margin="5"
+                    ToolTip="Video playback area with license plate detection overlays">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="150"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Video Display -->
+                    <Border Grid.Row="0" x:Name="VideoCanvas" ClipToBounds="True">
+                        <Border.Background>
+                            <ImageBrush Stretch="Uniform"/>
+                        </Border.Background>
+                    </Border>
+
+                    <!-- Detected Plates List -->
+                    <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,1,0,0" Margin="0,5,0,0"
+                            ToolTip="Recently detected license plates - newest plates appear on the left">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+                            <ListBox x:Name="LB_DetectedPlates" 
+                                     BorderThickness="0" 
+                                     Background="Transparent"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                            </ListBox>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Right Panel -->
+            <Grid Grid.Column="1" Margin="5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Orientation="Vertical">
+                        <!-- Input Video -->
+                        <Label x:Name="Label_InputVideo" Content="Input Video:" FontWeight="Bold" Margin="0,5,0,0"
+                               ToolTip="Path to the video file to process"/>
+                        <Grid Margin="0,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TB_InputVideo" Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center"
+                                     ToolTip="Enter the path to your video file or use the browse button"/>
+                            <Button x:Name="Button_SelectVideo" Grid.Column="1" Content="..." Width="30"
+                                    Height="{Binding ElementName=TB_InputVideo, Path=ActualHeight}"
+                                    ToolTip="Browse for a video file"/>
+                        </Grid>
+
+                        <!-- Registration Key -->
+                        <Label x:Name="Label_RegistrationKey" Content="Registration Key:" FontWeight="Bold" Margin="0,5,0,0"
+                               ToolTip="SimpleLPR license key file location"/>
+                        <Grid Margin="0,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TB_RegistrationKey" Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center"
+                                     ToolTip="Path to your SimpleLPR license key XML file"/>
+                            <Button x:Name="Button_SelectKey" Grid.Column="1" Content="..." Width="30"
+                                    Height="{Binding ElementName=TB_RegistrationKey, Path=ActualHeight}"
+                                    ToolTip="Browse for a license key file"/>
+                        </Grid>
+                        <Label x:Name="Label_RegKeyErrors" Foreground="Red" FontSize="12" Margin="0,-8,0,0"/>
+
+                        <!-- Countries -->
+                        <Label x:Name="Label_EnabledCountries" Content="Enabled Countries:" FontWeight="Bold" Margin="0,5,0,0"
+                               ToolTip="Select which countries' license plate formats to recognize"/>
+                        <Border BorderBrush="LightGray" BorderThickness="1" Height="120" Margin="0,0,0,5"
+                                ToolTip="Check the countries whose license plates you want to detect">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ListBox x:Name="LB_EnabledCountries" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                </ListBox>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Options -->
+                        <CheckBox x:Name="CB_PlateRegionDetection" Content="Plate Region Detection" Margin="0,5,0,0"
+                                  ToolTip="Enable detection of license plate regions in addition to text recognition"/>
+                        <CheckBox x:Name="CB_CropToPlateRegion" Content="Crop to Plate Region" Margin="0,5,0,0"
+                                  ToolTip="Crop detected plates to their bounding region (implies Plate Region Detection)"/>
+                        <CheckBox x:Name="CB_DrawOverlays" Content="Draw Overlays" Margin="0,5,0,0" IsChecked="True"
+                                  ToolTip="Show visual overlays on detected plates and characters during playback"/>
+
+                        <!-- Logging Options -->
+                        <Separator Margin="0,10,0,5"/>
+                        <CheckBox x:Name="CB_EnableLogging" Content="Enable Logging" Margin="0,5,0,0"
+                                  ToolTip="Save detected license plates to disk with metadata"/>
+                        <Label x:Name="Label_OutputFolder" Content="Output Folder:" FontWeight="Bold" Margin="0,5,0,0"
+                               ToolTip="Directory where detected plates will be saved"/>
+                        <Grid Margin="0,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TB_OutputFolder" Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center"
+                                     ToolTip="Enter the path where plate images and metadata will be saved"/>
+                            <Button x:Name="Button_SelectOutputFolder" Grid.Column="1" Content="&#183;&#183;&#183;" Width="30"
+                                    Height="{Binding ElementName=TB_OutputFolder, Path=ActualHeight}" VerticalAlignment="Center"
+                                    ToolTip="Browse for an output folder"/>
+                        </Grid>
+                        <Label x:Name="Label_OutputFolderErrors" Foreground="Red" FontSize="12" Margin="0,-8,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- Control Buttons -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+            <Button x:Name="Button_PlayContinue" Width="100" Margin="5" Height="30"
+                    ToolTip="Start processing the video or continue from pause"/>
+            <Button x:Name="Button_Pause" Content="Pause" Width="100" Margin="5" Height="30"
+                    ToolTip="Pause video processing"/>
+            <Button x:Name="Button_Stop" Content="Stop" Width="100" Margin="5" Height="30"
+                    ToolTip="Stop video processing and reset"/>
+            <Button x:Name="Button_Exit" Content="Exit" Width="100" Margin="5" Height="30"
+                    ToolTip="Exit the application"/>
+        </StackPanel>
+    </Grid>
+</Window>
