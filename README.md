@@ -1,12 +1,12 @@
 # SimpleLPR Code Samples
 
-A collection of sample applications demonstrating [SimpleLPR](https://www.warelogic.com), a powerful license plate recognition (LPR/ANPR) library for C++, .NET, and Python.
+A collection of sample applications demonstrating [SimpleLPR](https://www.warelogic.com), a handy license plate recognition (LPR/ANPR) library for C++, .NET, and Python.
 
 ![Screen capture of the VideoANPR demo application](https://www.warelogic.com/images/screenshot_videoanpr_1.jpg)
 
 ## What is SimpleLPR?
 
-SimpleLPR is a handy library that automatically detects and reads vehicle license plates in images and video streams. With over 10 years of development and hundreds of production deployments, it provides:
+SimpleLPR is a professional-grade library that automatically detects and reads vehicle license plates in images and video streams. With over 10 years of development and hundreds of production deployments, it provides:
 
 - 🎯 **85-95% accuracy** under typical conditions
 - 🌍 **Support for ~90 countries** with region-specific templates  
