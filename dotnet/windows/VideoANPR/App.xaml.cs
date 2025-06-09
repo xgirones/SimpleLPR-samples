@@ -26,6 +26,7 @@ using ReactiveUI;
 using Splat;
 using System.Reflection;
 using System.Windows;
+using System.Runtime.InteropServices;
 
 namespace VideoANPR
 {
@@ -34,6 +35,17 @@ namespace VideoANPR
     /// </summary>
     public partial class App : Application
     {
+        [DllImport("shell32.dll", SetLastError = true)]
+        static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            // Set a unique, consistent identity for this app
+            SetCurrentProcessExplicitAppUserModelID("Warelogic.VideoANPR.1.0");
+
+            base.OnStartup(e);
+        }
+
         public App()
         {
             // Suppress POCO warnings for UI controls
