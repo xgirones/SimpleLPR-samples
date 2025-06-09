@@ -6,7 +6,7 @@ A collection of sample applications demonstrating [SimpleLPR](https://www.warelo
 
 ## What is SimpleLPR?
 
-SimpleLPR is a professional-grade library that automatically detects and reads vehicle license plates in images and video streams. With over 10 years of development and hundreds of production deployments, it provides:
+SimpleLPR is a handy library that automatically detects and reads vehicle license plates in images and video streams. With over 10 years of development and hundreds of production deployments, it provides:
 
 - 🎯 **85-95% accuracy** under typical conditions
 - 🌍 **Support for ~90 countries** with region-specific templates  
