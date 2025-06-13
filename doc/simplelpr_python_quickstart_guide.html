@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>simplelpr_python_quickstart_guide.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="simplelpr-python-quick-start-guide">SimpleLPR Python Quick Start Guide</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#basic-setup">Basic Setup</a></li>
+<li><a href="#your-first-license-plate-recognition">Your First License Plate Recognition</a></li>
+<li><a href="#working-with-images">Working with Images</a></li>
+<li><a href="#processing-video-files">Processing Video Files</a></li>
+<li><a href="#real-time-video-streams">Real-time Video Streams</a></li>
+<li><a href="#multi-threaded-processing">Multi-threaded Processing</a></li>
+<li><a href="#license-plate-tracking">License Plate Tracking</a></li>
+<li><a href="#advanced-configuration">Advanced Configuration</a></li>
+<li><a href="#common-patterns-and-best-practices">Common Patterns and Best Practices</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#performance-optimization">Performance Optimization</a></li>
+</ol>
+<hr>
+<h2 id="installation">Installation</h2>
+<p>Install SimpleLPR from PyPI:</p>
+<pre class="hljs"><code><div>pip install simplelpr
+</div></code></pre>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>64-bit Python 3.8+ (3.8, 3.9, 3.10, 3.11, or 3.12)</li>
+<li>Windows (x64) or Linux (x64)</li>
+<li>License key for production use (60-day evaluation available)</li>
+</ul>
+<hr>
+<h2 id="basic-setup">Basic Setup</h2>
+<h3 id="minimal-example">Minimal Example</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+
+<span class="hljs-comment"># Create engine with default settings</span>
+setup_params = simplelpr.EngineSetupParms()
+engine = simplelpr.SimpleLPR(setup_params)
+
+<span class="hljs-comment"># Optional: Set license key for production use</span>
+<span class="hljs-comment"># engine.set_productKey("path/to/license.xml")</span>
+
+print(<span class="hljs-string">f"SimpleLPR Version: <span class="hljs-subst">{engine.versionNumber.A}</span>.<span class="hljs-subst">{engine.versionNumber.B}</span>.<span class="hljs-subst">{engine.versionNumber.C}</span>.<span class="hljs-subst">{engine.versionNumber.D}</span>"</span>)
+print(<span class="hljs-string">f"Supported countries: <span class="hljs-subst">{engine.numSupportedCountries}</span>"</span>)
+</div></code></pre>
+<h3 id="license-key-setup">License Key Setup</h3>
+<pre class="hljs"><code><div><span class="hljs-comment"># From file</span>
+engine.set_productKey(<span class="hljs-string">"license.xml"</span>)
+
+<span class="hljs-comment"># From bytes (useful for embedded keys)</span>
+<span class="hljs-keyword">with</span> open(<span class="hljs-string">"license.xml"</span>, <span class="hljs-string">"rb"</span>) <span class="hljs-keyword">as</span> f:
+    license_data = f.read()
+engine.set_productKey(license_data)
+</div></code></pre>
+<hr>
+<h2 id="your-first-license-plate-recognition">Your First License Plate Recognition</h2>
+<h3 id="analyze-a-single-image">Analyze a Single Image</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">analyze_image</span><span class="hljs-params">(image_path, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-comment"># Setup engine</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-comment"># Configure for specific country</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)  <span class="hljs-comment"># Disable all countries</span>
+    
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)  <span class="hljs-comment"># Enable target country</span>
+    engine.realizeCountryWeights()
+    
+    <span class="hljs-comment"># Create processor</span>
+    processor = engine.createProcessor()
+    processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    processor.cropToPlateRegionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-comment"># Analyze image</span>
+    candidates = processor.analyze(image_path)
+    
+    <span class="hljs-comment"># Display results</span>
+    print(<span class="hljs-string">f"Found <span class="hljs-subst">{len(candidates)}</span> license plate candidates:"</span>)
+    
+    <span class="hljs-keyword">for</span> i, candidate <span class="hljs-keyword">in</span> enumerate(candidates):
+        print(<span class="hljs-string">f"\nCandidate <span class="hljs-subst">{i+<span class="hljs-number">1</span>}</span>:"</span>)
+        print(<span class="hljs-string">f"  Dark on light background: <span class="hljs-subst">{candidate.darkOnLight}</span>"</span>)
+        print(<span class="hljs-string">f"  Plate detection confidence: <span class="hljs-subst">{candidate.plateDetectionConfidence:<span class="hljs-number">.3</span>f}</span>"</span>)
+        print(<span class="hljs-string">f"  Bounding box: <span class="hljs-subst">{candidate.boundingBox.left}</span>, <span class="hljs-subst">{candidate.boundingBox.top}</span>, "</span>
+              <span class="hljs-string">f"<span class="hljs-subst">{candidate.boundingBox.width}</span>, <span class="hljs-subst">{candidate.boundingBox.height}</span>"</span>)
+        
+        <span class="hljs-keyword">for</span> j, match <span class="hljs-keyword">in</span> enumerate(candidate.matches):
+            print(<span class="hljs-string">f"  Match <span class="hljs-subst">{j+<span class="hljs-number">1</span>}</span>: '<span class="hljs-subst">{match.text}</span>' (Country: <span class="hljs-subst">{match.country}</span>, "</span>
+                  <span class="hljs-string">f"ISO: <span class="hljs-subst">{match.countryISO}</span>, Confidence: <span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+            
+            <span class="hljs-comment"># Show individual characters</span>
+            <span class="hljs-keyword">for</span> k, element <span class="hljs-keyword">in</span> enumerate(match.elements):
+                print(<span class="hljs-string">f"    Char <span class="hljs-subst">{k+<span class="hljs-number">1</span>}</span>: '<span class="hljs-subst">{element.glyph}</span>' (Confidence: <span class="hljs-subst">{element.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+
+<span class="hljs-comment"># Usage</span>
+analyze_image(<span class="hljs-string">"car_image.jpg"</span>, <span class="hljs-string">"Spain"</span>)
+</div></code></pre>
+<hr>
+<h2 id="working-with-images">Working with Images</h2>
+<h3 id="different-input-methods">Different Input Methods</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">from</span> PIL <span class="hljs-keyword">import</span> Image
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">setup_engine_and_processor</span><span class="hljs-params">(country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-string">"""Helper function to setup engine and processor"""</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-comment"># Configure country</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    processor = engine.createProcessor()
+    processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    processor.cropToPlateRegionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-keyword">return</span> engine, processor
+
+<span class="hljs-comment"># Method 1: File path</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">analyze_from_file</span><span class="hljs-params">(image_path)</span>:</span>
+    engine, processor = setup_engine_and_processor()
+    <span class="hljs-keyword">return</span> processor.analyze(image_path)
+
+<span class="hljs-comment"># Method 2: Byte array</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">analyze_from_bytes</span><span class="hljs-params">(image_path)</span>:</span>
+    engine, processor = setup_engine_and_processor()
+    
+    <span class="hljs-keyword">with</span> open(image_path, <span class="hljs-string">'rb'</span>) <span class="hljs-keyword">as</span> f:
+        image_bytes = f.read()
+    
+    <span class="hljs-keyword">return</span> processor.analyze(image_bytes)
+
+<span class="hljs-comment"># Method 3: NumPy array (from PIL)</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">analyze_from_pil</span><span class="hljs-params">(image_path)</span>:</span>
+    engine, processor = setup_engine_and_processor()
+    
+    <span class="hljs-comment"># Load with PIL and convert to numpy</span>
+    pil_image = Image.open(image_path)
+    numpy_array = np.asarray(pil_image)
+    
+    <span class="hljs-keyword">return</span> processor.analyze(numpy_array)
+
+<span class="hljs-comment"># Method 4: OpenCV (if available)</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">analyze_from_opencv</span><span class="hljs-params">(image_path)</span>:</span>
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">import</span> cv2
+        engine, processor = setup_engine_and_processor()
+        
+        <span class="hljs-comment"># Load with OpenCV</span>
+        cv_image = cv2.imread(image_path)
+        
+        <span class="hljs-keyword">return</span> processor.analyze(cv_image)
+    <span class="hljs-keyword">except</span> ImportError:
+        print(<span class="hljs-string">"OpenCV not available"</span>)
+        <span class="hljs-keyword">return</span> []
+</div></code></pre>
+<h3 id="batch-processing-multiple-images">Batch Processing Multiple Images</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">batch_analyze_images</span><span class="hljs-params">(image_folder, country=<span class="hljs-string">"Spain"</span>, image_extensions=<span class="hljs-params">(<span class="hljs-string">'.jpg'</span>, <span class="hljs-string">'.png'</span>, <span class="hljs-string">'.tif'</span>)</span>)</span>:</span>
+    <span class="hljs-string">"""Analyze all images in a folder"""</span>
+    
+    <span class="hljs-comment"># Setup engine once</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    <span class="hljs-comment"># Create processor</span>
+    processor = engine.createProcessor()
+    processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    results = {}
+    
+    <span class="hljs-comment"># Process all images</span>
+    image_folder = Path(image_folder)
+    <span class="hljs-keyword">for</span> image_path <span class="hljs-keyword">in</span> image_folder.iterdir():
+        <span class="hljs-keyword">if</span> image_path.suffix.lower() <span class="hljs-keyword">in</span> image_extensions:
+            <span class="hljs-keyword">try</span>:
+                candidates = processor.analyze(str(image_path))
+                results[image_path.name] = candidates
+                
+                <span class="hljs-comment"># Print summary</span>
+                <span class="hljs-keyword">if</span> candidates:
+                    best_match = candidates[<span class="hljs-number">0</span>].matches[<span class="hljs-number">0</span>] <span class="hljs-keyword">if</span> candidates[<span class="hljs-number">0</span>].matches <span class="hljs-keyword">else</span> <span class="hljs-literal">None</span>
+                    plate_text = best_match.text <span class="hljs-keyword">if</span> best_match <span class="hljs-keyword">else</span> <span class="hljs-string">"No text"</span>
+                    print(<span class="hljs-string">f"<span class="hljs-subst">{image_path.name}</span>: <span class="hljs-subst">{plate_text}</span>"</span>)
+                <span class="hljs-keyword">else</span>:
+                    print(<span class="hljs-string">f"<span class="hljs-subst">{image_path.name}</span>: No plates detected"</span>)
+                    
+            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                print(<span class="hljs-string">f"Error processing <span class="hljs-subst">{image_path.name}</span>: <span class="hljs-subst">{e}</span>"</span>)
+                results[image_path.name] = []
+    
+    <span class="hljs-keyword">return</span> results
+
+<span class="hljs-comment"># Usage</span>
+results = batch_analyze_images(<span class="hljs-string">"./car_images"</span>, <span class="hljs-string">"Germany"</span>)
+</div></code></pre>
+<hr>
+<h2 id="processing-video-files">Processing Video Files</h2>
+<h3 id="basic-video-processing">Basic Video Processing</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_video_file</span><span class="hljs-params">(video_path, country=<span class="hljs-string">"Spain"</span>, max_frames=None)</span>:</span>
+    <span class="hljs-string">"""Process a video file frame by frame"""</span>
+    
+    <span class="hljs-comment"># Setup engine</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-comment"># Configure country</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    <span class="hljs-comment"># Create processor</span>
+    processor = engine.createProcessor()
+    processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    processor.cropToPlateRegionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-comment"># Open video source</span>
+    video_source = engine.openVideoSource(
+        video_path, 
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>  <span class="hljs-comment"># No size limits</span>
+    )
+    
+    print(<span class="hljs-string">f"Video opened: Live source = <span class="hljs-subst">{video_source.isLiveSource}</span>"</span>)
+    print(<span class="hljs-string">f"Video state: <span class="hljs-subst">{video_source.state}</span>"</span>)
+    
+    frame_count = <span class="hljs-number">0</span>
+    detections = []
+    
+    <span class="hljs-comment"># Process frames</span>
+    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+        frame = video_source.nextFrame()
+        <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">break</span>
+            
+        frame_count += <span class="hljs-number">1</span>
+        
+        <span class="hljs-comment"># Analyze frame</span>
+        candidates = processor.analyze(frame)
+        
+        <span class="hljs-keyword">if</span> candidates:
+            <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> candidates:
+                <span class="hljs-keyword">if</span> candidate.matches:
+                    match = candidate.matches[<span class="hljs-number">0</span>]
+                    detection = {
+                        <span class="hljs-string">'frame'</span>: frame_count,
+                        <span class="hljs-string">'sequence'</span>: frame.sequenceNumber,
+                        <span class="hljs-string">'timestamp'</span>: frame.timestamp,
+                        <span class="hljs-string">'text'</span>: match.text,
+                        <span class="hljs-string">'country'</span>: match.country,
+                        <span class="hljs-string">'confidence'</span>: match.confidence
+                    }
+                    detections.append(detection)
+                    print(<span class="hljs-string">f"Frame <span class="hljs-subst">{frame_count}</span> (<span class="hljs-subst">{frame.timestamp:<span class="hljs-number">.2</span>f}</span>s): <span class="hljs-subst">{match.text}</span> "</span>
+                          <span class="hljs-string">f"(<span class="hljs-subst">{match.country}</span>, conf: <span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+        
+        <span class="hljs-comment"># Optional: limit processing</span>
+        <span class="hljs-keyword">if</span> max_frames <span class="hljs-keyword">and</span> frame_count &gt;= max_frames:
+            <span class="hljs-keyword">break</span>
+    
+    print(<span class="hljs-string">f"\nProcessed <span class="hljs-subst">{frame_count}</span> frames, found <span class="hljs-subst">{len(detections)}</span> plates"</span>)
+    <span class="hljs-keyword">return</span> detections
+
+<span class="hljs-comment"># Usage</span>
+detections = process_video_file(<span class="hljs-string">"traffic_video.mp4"</span>, <span class="hljs-string">"Germany"</span>, max_frames=<span class="hljs-number">1000</span>)
+</div></code></pre>
+<h3 id="saving-frame-thumbnails">Saving Frame Thumbnails</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> os
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_video_with_thumbnails</span><span class="hljs-params">(video_path, output_dir, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-string">"""Process video and save thumbnails of detected plates"""</span>
+    
+    <span class="hljs-comment"># Create output directory</span>
+    os.makedirs(output_dir, exist_ok=<span class="hljs-literal">True</span>)
+    
+    <span class="hljs-comment"># Setup engine and processor</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    processor = engine.createProcessor()
+    processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    processor.cropToPlateRegionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-comment"># Open video</span>
+    video_source = engine.openVideoSource(
+        video_path,
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>
+    )
+    
+    detection_count = <span class="hljs-number">0</span>
+    
+    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+        frame = video_source.nextFrame()
+        <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">break</span>
+        
+        candidates = processor.analyze(frame)
+        
+        <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> candidates:
+            <span class="hljs-keyword">if</span> candidate.matches:
+                match = candidate.matches[<span class="hljs-number">0</span>]
+                detection_count += <span class="hljs-number">1</span>
+                
+                <span class="hljs-comment"># Save frame as thumbnail</span>
+                filename = <span class="hljs-string">f"detection_<span class="hljs-subst">{detection_count:<span class="hljs-number">04</span>d}</span>_<span class="hljs-subst">{match.text}</span>_<span class="hljs-subst">{frame.timestamp:<span class="hljs-number">.2</span>f}</span>s.jpg"</span>
+                filepath = os.path.join(output_dir, filename)
+                frame.saveAsJPEG(filepath, <span class="hljs-number">95</span>)  <span class="hljs-comment"># 95% quality</span>
+                
+                print(<span class="hljs-string">f"Saved: <span class="hljs-subst">{filename}</span> - <span class="hljs-subst">{match.text}</span> (<span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+    
+    print(<span class="hljs-string">f"Saved <span class="hljs-subst">{detection_count}</span> thumbnails to <span class="hljs-subst">{output_dir}</span>"</span>)
+
+<span class="hljs-comment"># Usage</span>
+process_video_with_thumbnails(<span class="hljs-string">"traffic.mp4"</span>, <span class="hljs-string">"./thumbnails"</span>, <span class="hljs-string">"Austria"</span>)
+</div></code></pre>
+<hr>
+<h2 id="real-time-video-streams">Real-time Video Streams</h2>
+<h3 id="rtsp-stream-processing">RTSP Stream Processing</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> time
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_rtsp_stream</span><span class="hljs-params">(rtsp_url, country=<span class="hljs-string">"Spain"</span>, duration_seconds=<span class="hljs-number">60</span>)</span>:</span>
+    <span class="hljs-string">"""Process real-time RTSP video stream"""</span>
+    
+    <span class="hljs-comment"># Setup engine</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    processor = engine.createProcessor()
+    processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-comment"># Open RTSP stream</span>
+    video_source = engine.openVideoSource(
+        rtsp_url,
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">1920</span>, <span class="hljs-number">1080</span>  <span class="hljs-comment"># Limit resolution for performance</span>
+    )
+    
+    print(<span class="hljs-string">f"Stream opened: <span class="hljs-subst">{rtsp_url}</span>"</span>)
+    print(<span class="hljs-string">f"Is live source: <span class="hljs-subst">{video_source.isLiveSource}</span>"</span>)
+    
+    start_time = time.time()
+    frame_count = <span class="hljs-number">0</span>
+    detections = []
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">while</span> time.time() - start_time &lt; duration_seconds:
+            frame = video_source.nextFrame()
+            
+            <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                print(<span class="hljs-string">f"No frame received, stream state: <span class="hljs-subst">{video_source.state}</span>"</span>)
+                
+                <span class="hljs-comment"># Try to reconnect if it's a live source</span>
+                <span class="hljs-keyword">if</span> video_source.isLiveSource:
+                    print(<span class="hljs-string">"Attempting to reconnect..."</span>)
+                    video_source.reconnect()
+                    time.sleep(<span class="hljs-number">1</span>)
+                    <span class="hljs-keyword">continue</span>
+                <span class="hljs-keyword">else</span>:
+                    <span class="hljs-keyword">break</span>
+            
+            frame_count += <span class="hljs-number">1</span>
+            
+            <span class="hljs-comment"># Process frame</span>
+            candidates = processor.analyze(frame)
+            
+            <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> candidates:
+                <span class="hljs-keyword">if</span> candidate.matches:
+                    match = candidate.matches[<span class="hljs-number">0</span>]
+                    detection = {
+                        <span class="hljs-string">'timestamp'</span>: time.time(),
+                        <span class="hljs-string">'frame_time'</span>: frame.timestamp,
+                        <span class="hljs-string">'text'</span>: match.text,
+                        <span class="hljs-string">'country'</span>: match.country,
+                        <span class="hljs-string">'confidence'</span>: match.confidence
+                    }
+                    detections.append(detection)
+                    
+                    print(<span class="hljs-string">f"[<span class="hljs-subst">{time.strftime(<span class="hljs-string">'%H:%M:%S'</span>)}</span>] Detected: <span class="hljs-subst">{match.text}</span> "</span>
+                          <span class="hljs-string">f"(<span class="hljs-subst">{match.country}</span>, <span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+            
+            <span class="hljs-comment"># Print stats every 100 frames</span>
+            <span class="hljs-keyword">if</span> frame_count % <span class="hljs-number">100</span> == <span class="hljs-number">0</span>:
+                fps = frame_count / (time.time() - start_time)
+                print(<span class="hljs-string">f"Processed <span class="hljs-subst">{frame_count}</span> frames, <span class="hljs-subst">{fps:<span class="hljs-number">.1</span>f}</span> FPS, "</span>
+                      <span class="hljs-string">f"<span class="hljs-subst">{len(detections)}</span> total detections"</span>)
+    
+    <span class="hljs-keyword">except</span> KeyboardInterrupt:
+        print(<span class="hljs-string">"Stream processing interrupted by user"</span>)
+    
+    print(<span class="hljs-string">f"\nStream processing complete:"</span>)
+    print(<span class="hljs-string">f"  Duration: <span class="hljs-subst">{time.time() - start_time:<span class="hljs-number">.1</span>f}</span> seconds"</span>)
+    print(<span class="hljs-string">f"  Frames processed: <span class="hljs-subst">{frame_count}</span>"</span>)
+    print(<span class="hljs-string">f"  Total detections: <span class="hljs-subst">{len(detections)}</span>"</span>)
+    
+    <span class="hljs-keyword">return</span> detections
+
+<span class="hljs-comment"># Usage</span>
+detections = process_rtsp_stream(<span class="hljs-string">"rtsp://camera_ip:554/stream"</span>, <span class="hljs-string">"Germany"</span>, <span class="hljs-number">300</span>)
+</div></code></pre>
+<hr>
+<h2 id="multi-threaded-processing">Multi-threaded Processing</h2>
+<h3 id="processor-pool-for-concurrent-analysis">Processor Pool for Concurrent Analysis</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path
+<span class="hljs-keyword">from</span> concurrent.futures <span class="hljs-keyword">import</span> ThreadPoolExecutor
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">setup_processor_pool</span><span class="hljs-params">(country=<span class="hljs-string">"Spain"</span>, num_processors=<span class="hljs-number">0</span>)</span>:</span>
+    <span class="hljs-string">"""Create and configure a processor pool"""</span>
+    
+    setup_params = simplelpr.EngineSetupParms()
+    setup_params.maxConcurrentImageProcessingOps = <span class="hljs-number">4</span>
+    
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-comment"># Configure country</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    <span class="hljs-comment"># Create processor pool</span>
+    pool = engine.createProcessorPool(num_processors)
+    pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    pool.cropToPlateRegionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-keyword">return</span> engine, pool
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_images_with_pool</span><span class="hljs-params">(image_paths, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-string">"""Process multiple images concurrently using processor pool"""</span>
+    
+    engine, pool = setup_processor_pool(country)
+    
+    <span class="hljs-comment"># Launch all analyses</span>
+    launched_requests = []
+    
+    <span class="hljs-keyword">for</span> i, image_path <span class="hljs-keyword">in</span> enumerate(image_paths):
+        success = pool.launchAnalyze(
+            streamId=<span class="hljs-number">0</span>,
+            requestId=i,
+            timestampInSec=float(i),
+            timeoutInMs=simplelpr.TIMEOUT_INFINITE,
+            imgPath=str(image_path)
+        )
+        
+        <span class="hljs-keyword">if</span> success:
+            launched_requests.append((i, image_path))
+        <span class="hljs-keyword">else</span>:
+            print(<span class="hljs-string">f"Failed to launch analysis for <span class="hljs-subst">{image_path}</span>"</span>)
+    
+    <span class="hljs-comment"># Collect results</span>
+    results = {}
+    completed = <span class="hljs-number">0</span>
+    
+    <span class="hljs-keyword">while</span> completed &lt; len(launched_requests):
+        result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_INFINITE)
+        
+        <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">break</span>
+        
+        completed += <span class="hljs-number">1</span>
+        request_id = result.requestId
+        image_path = image_paths[request_id]
+        
+        <span class="hljs-keyword">if</span> result.errorInfo:
+            print(<span class="hljs-string">f"Error processing <span class="hljs-subst">{image_path}</span>: <span class="hljs-subst">{result.errorInfo.description}</span>"</span>)
+            results[image_path] = []
+        <span class="hljs-keyword">else</span>:
+            results[image_path] = result.candidates
+            
+            <span class="hljs-comment"># Print summary</span>
+            <span class="hljs-keyword">if</span> result.candidates:
+                best_match = result.candidates[<span class="hljs-number">0</span>].matches[<span class="hljs-number">0</span>] <span class="hljs-keyword">if</span> result.candidates[<span class="hljs-number">0</span>].matches <span class="hljs-keyword">else</span> <span class="hljs-literal">None</span>
+                plate_text = best_match.text <span class="hljs-keyword">if</span> best_match <span class="hljs-keyword">else</span> <span class="hljs-string">"No text"</span>
+                print(<span class="hljs-string">f"Completed <span class="hljs-subst">{completed}</span>/<span class="hljs-subst">{len(launched_requests)}</span>: "</span>
+                      <span class="hljs-string">f"<span class="hljs-subst">{image_path.name}</span> -&gt; <span class="hljs-subst">{plate_text}</span>"</span>)
+            <span class="hljs-keyword">else</span>:
+                print(<span class="hljs-string">f"Completed <span class="hljs-subst">{completed}</span>/<span class="hljs-subst">{len(launched_requests)}</span>: "</span>
+                      <span class="hljs-string">f"<span class="hljs-subst">{image_path.name}</span> -&gt; No plates"</span>)
+    
+    <span class="hljs-keyword">return</span> results
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">concurrent_video_analysis</span><span class="hljs-params">(video_path, country=<span class="hljs-string">"Spain"</span>, max_frames=<span class="hljs-number">1000</span>)</span>:</span>
+    <span class="hljs-string">"""Process video using processor pool for better performance"""</span>
+    
+    engine, pool = setup_processor_pool(country, num_processors=<span class="hljs-number">4</span>)
+    
+    <span class="hljs-comment"># Open video</span>
+    video_source = engine.openVideoSource(
+        video_path,
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>
+    )
+    
+    frames_launched = <span class="hljs-number">0</span>
+    frames_processed = <span class="hljs-number">0</span>
+    detections = []
+    
+    <span class="hljs-comment"># Process video with concurrent analysis</span>
+    <span class="hljs-keyword">while</span> frames_launched &lt; max_frames:
+        frame = video_source.nextFrame()
+        <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">break</span>
+        
+        <span class="hljs-comment"># Launch analysis</span>
+        success = pool.launchAnalyze(
+            streamId=<span class="hljs-number">0</span>,
+            requestId=frame.sequenceNumber,
+            timeoutInMs=simplelpr.TIMEOUT_IMMEDIATE,  <span class="hljs-comment"># Non-blocking</span>
+            frame=frame
+        )
+        
+        <span class="hljs-keyword">if</span> success:
+            frames_launched += <span class="hljs-number">1</span>
+        
+        <span class="hljs-comment"># Check for completed results (non-blocking)</span>
+        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+            result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_IMMEDIATE)
+            <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">break</span>
+            
+            frames_processed += <span class="hljs-number">1</span>
+            
+            <span class="hljs-keyword">if</span> result.candidates:
+                <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> result.candidates:
+                    <span class="hljs-keyword">if</span> candidate.matches:
+                        match = candidate.matches[<span class="hljs-number">0</span>]
+                        detection = {
+                            <span class="hljs-string">'frame_id'</span>: result.requestId,
+                            <span class="hljs-string">'timestamp'</span>: result.timestamp,
+                            <span class="hljs-string">'text'</span>: match.text,
+                            <span class="hljs-string">'confidence'</span>: match.confidence
+                        }
+                        detections.append(detection)
+                        print(<span class="hljs-string">f"Frame <span class="hljs-subst">{result.requestId}</span>: <span class="hljs-subst">{match.text}</span> (<span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+    
+    <span class="hljs-comment"># Wait for remaining results</span>
+    <span class="hljs-keyword">while</span> frames_processed &lt; frames_launched:
+        result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_INFINITE)
+        <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">break</span>
+        
+        frames_processed += <span class="hljs-number">1</span>
+        <span class="hljs-comment"># Process result same as above...</span>
+    
+    print(<span class="hljs-string">f"Processed <span class="hljs-subst">{frames_processed}</span> frames, found <span class="hljs-subst">{len(detections)}</span> plates"</span>)
+    <span class="hljs-keyword">return</span> detections
+
+<span class="hljs-comment"># Usage examples</span>
+<span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">"__main__"</span>:
+    <span class="hljs-comment"># Example 1: Batch process images</span>
+    image_folder = Path(<span class="hljs-string">"./test_images"</span>)
+    <span class="hljs-keyword">if</span> image_folder.exists():
+        image_paths = list(image_folder.glob(<span class="hljs-string">"*.jpg"</span>))
+        results = process_images_with_pool(image_paths, <span class="hljs-string">"Germany"</span>)
+    
+    <span class="hljs-comment"># Example 2: Concurrent video processing</span>
+    <span class="hljs-comment"># detections = concurrent_video_analysis("traffic.mp4", "Spain", 500)</span>
+</div></code></pre>
+<hr>
+<h2 id="license-plate-tracking">License Plate Tracking</h2>
+<h3 id="video-tracking-with-thumbnails">Video Tracking with Thumbnails</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">import</span> time
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">track_plates_in_video</span><span class="hljs-params">(video_path, output_dir=<span class="hljs-string">"./tracked_plates"</span>, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-string">"""Track license plates across video frames with thumbnail generation"""</span>
+    
+    <span class="hljs-comment"># Create output directory</span>
+    os.makedirs(output_dir, exist_ok=<span class="hljs-literal">True</span>)
+    
+    <span class="hljs-comment"># Setup engine</span>
+    setup_params = simplelpr.EngineSetupParms()
+    setup_params.maxConcurrentImageProcessingOps = <span class="hljs-number">4</span>
+    
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-comment"># Configure country</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    <span class="hljs-comment"># Create processor pool</span>
+    pool = engine.createProcessorPool(<span class="hljs-number">4</span>)
+    pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-comment"># Setup plate tracker</span>
+    tracker_params = simplelpr.PlateCandidateTrackerSetupParms(
+        triggerWindowInSec=<span class="hljs-number">3.0</span>,      <span class="hljs-comment"># 3 second trigger window</span>
+        maxIdleTimeInSec=<span class="hljs-number">2.0</span>,        <span class="hljs-comment"># 2 second max idle time  </span>
+        minTriggerFrameCount=<span class="hljs-number">3</span>,      <span class="hljs-comment"># Need 3 detections to trigger</span>
+        thumbnailWidth=<span class="hljs-number">256</span>,          <span class="hljs-comment"># Thumbnail dimensions</span>
+        thumbnailHeight=<span class="hljs-number">128</span>
+    )
+    
+    tracker = engine.createPlateCandidateTracker(tracker_params)
+    
+    <span class="hljs-comment"># Open video</span>
+    video_source = engine.openVideoSource(
+        video_path,
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>
+    )
+    
+    print(<span class="hljs-string">f"Processing video: <span class="hljs-subst">{video_path}</span>"</span>)
+    print(<span class="hljs-string">f"Output directory: <span class="hljs-subst">{output_dir}</span>"</span>)
+    
+    frame_queue = []
+    track_count = <span class="hljs-number">0</span>
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_tracks</span><span class="hljs-params">(tracks, track_type)</span>:</span>
+        <span class="hljs-string">"""Process new or closed tracks"""</span>
+        <span class="hljs-keyword">nonlocal</span> track_count
+        
+        <span class="hljs-keyword">for</span> track <span class="hljs-keyword">in</span> tracks:
+            track_count += <span class="hljs-number">1</span>
+            
+            <span class="hljs-comment"># Get best match</span>
+            candidate = track.representativeCandidate
+            <span class="hljs-keyword">if</span> candidate.matches:
+                match = candidate.matches[<span class="hljs-number">0</span>]
+                
+                print(<span class="hljs-string">f"<span class="hljs-subst">{track_type}</span> track #<span class="hljs-subst">{track_count}</span>:"</span>)
+                print(<span class="hljs-string">f"  Text: <span class="hljs-subst">{match.text}</span>"</span>)
+                print(<span class="hljs-string">f"  Country: <span class="hljs-subst">{match.country}</span> (<span class="hljs-subst">{match.countryISO}</span>)"</span>)
+                print(<span class="hljs-string">f"  Confidence: <span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>"</span>)
+                print(<span class="hljs-string">f"  First detection: Frame <span class="hljs-subst">{track.firstDetectionFrameId}</span> "</span>
+                      <span class="hljs-string">f"at <span class="hljs-subst">{track.firstDetectionTimestamp:<span class="hljs-number">.2</span>f}</span>s"</span>)
+                print(<span class="hljs-string">f"  Latest detection: Frame <span class="hljs-subst">{track.newestDetectionFrameId}</span> "</span>
+                      <span class="hljs-string">f"at <span class="hljs-subst">{track.newestDetectionTimestamp:<span class="hljs-number">.2</span>f}</span>s"</span>)
+                print(<span class="hljs-string">f"  Representative: Frame <span class="hljs-subst">{track.representativeFrameId}</span> "</span>
+                      <span class="hljs-string">f"at <span class="hljs-subst">{track.representativeTimestamp:<span class="hljs-number">.2</span>f}</span>s"</span>)
+                
+                <span class="hljs-comment"># Save thumbnail if available</span>
+                <span class="hljs-keyword">if</span> track.representativeThumbnail:
+                    filename = (<span class="hljs-string">f"track_<span class="hljs-subst">{track_count:<span class="hljs-number">04</span>d}</span>_<span class="hljs-subst">{track.representativeFrameId:<span class="hljs-number">06</span>d}</span>_"</span>
+                              <span class="hljs-string">f"<span class="hljs-subst">{track.representativeTimestamp:<span class="hljs-number">.2</span>f}</span>s_<span class="hljs-subst">{match.text}</span>.jpg"</span>)
+                    filepath = os.path.join(output_dir, filename)
+                    track.representativeThumbnail.saveAsJPEG(filepath, <span class="hljs-number">95</span>)
+                    print(<span class="hljs-string">f"  Saved thumbnail: <span class="hljs-subst">{filename}</span>"</span>)
+                
+                print()
+    
+    <span class="hljs-comment"># Process video</span>
+    frame_count = <span class="hljs-number">0</span>
+    start_time = time.time()
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+            frame = video_source.nextFrame()
+            <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">break</span>
+            
+            frame_queue.append(frame)
+            frame_count += <span class="hljs-number">1</span>
+            
+            <span class="hljs-comment"># Launch analysis</span>
+            success = pool.launchAnalyze(
+                streamId=<span class="hljs-number">0</span>,
+                requestId=frame.sequenceNumber,
+                timeoutInMs=simplelpr.TIMEOUT_INFINITE,
+                frame=frame
+            )
+            
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> success:
+                print(<span class="hljs-string">f"Failed to launch analysis for frame <span class="hljs-subst">{frame.sequenceNumber}</span>"</span>)
+                <span class="hljs-keyword">continue</span>
+            
+            <span class="hljs-comment"># Process completed results</span>
+            <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+                result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_IMMEDIATE)
+                <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                    <span class="hljs-keyword">break</span>
+                
+                <span class="hljs-comment"># Find corresponding frame</span>
+                <span class="hljs-keyword">if</span> frame_queue <span class="hljs-keyword">and</span> result.requestId == frame_queue[<span class="hljs-number">0</span>].sequenceNumber:
+                    process_frame = frame_queue.pop(<span class="hljs-number">0</span>)
+                    
+                    <span class="hljs-comment"># Process with tracker</span>
+                    tracker_result = tracker.processFrameCandidates(result, process_frame)
+                    
+                    <span class="hljs-comment"># Handle new tracks</span>
+                    <span class="hljs-keyword">if</span> tracker_result.newTracks:
+                        process_tracks(tracker_result.newTracks, <span class="hljs-string">"NEW"</span>)
+                    
+                    <span class="hljs-comment"># Handle closed tracks  </span>
+                    <span class="hljs-keyword">if</span> tracker_result.closedTracks:
+                        process_tracks(tracker_result.closedTracks, <span class="hljs-string">"CLOSED"</span>)
+            
+            <span class="hljs-comment"># Progress update</span>
+            <span class="hljs-keyword">if</span> frame_count % <span class="hljs-number">100</span> == <span class="hljs-number">0</span>:
+                elapsed = time.time() - start_time
+                fps = frame_count / elapsed
+                print(<span class="hljs-string">f"Processed <span class="hljs-subst">{frame_count}</span> frames (<span class="hljs-subst">{fps:<span class="hljs-number">.1</span>f}</span> FPS), "</span>
+                      <span class="hljs-string">f"<span class="hljs-subst">{track_count}</span> tracks found"</span>)
+    
+    <span class="hljs-keyword">except</span> KeyboardInterrupt:
+        print(<span class="hljs-string">"Processing interrupted by user"</span>)
+    
+    <span class="hljs-comment"># Process remaining results</span>
+    print(<span class="hljs-string">"Processing remaining frames..."</span>)
+    <span class="hljs-keyword">while</span> pool.ongoingRequestCount_get(<span class="hljs-number">0</span>) &gt; <span class="hljs-number">0</span>:
+        result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_INFINITE)
+        <span class="hljs-keyword">if</span> result <span class="hljs-keyword">and</span> frame_queue <span class="hljs-keyword">and</span> result.requestId == frame_queue[<span class="hljs-number">0</span>].sequenceNumber:
+            process_frame = frame_queue.pop(<span class="hljs-number">0</span>)
+            tracker_result = tracker.processFrameCandidates(result, process_frame)
+            
+            <span class="hljs-keyword">if</span> tracker_result.newTracks:
+                process_tracks(tracker_result.newTracks, <span class="hljs-string">"NEW"</span>)
+            <span class="hljs-keyword">if</span> tracker_result.closedTracks:
+                process_tracks(tracker_result.closedTracks, <span class="hljs-string">"CLOSED"</span>)
+    
+    <span class="hljs-comment"># Flush tracker to get remaining tracks</span>
+    print(<span class="hljs-string">"Flushing tracker..."</span>)
+    final_result = tracker.flush()
+    <span class="hljs-keyword">if</span> final_result.closedTracks:
+        process_tracks(final_result.closedTracks, <span class="hljs-string">"FINAL"</span>)
+    
+    elapsed = time.time() - start_time
+    print(<span class="hljs-string">f"\nTracking complete:"</span>)
+    print(<span class="hljs-string">f"  Total frames: <span class="hljs-subst">{frame_count}</span>"</span>)
+    print(<span class="hljs-string">f"  Processing time: <span class="hljs-subst">{elapsed:<span class="hljs-number">.1</span>f}</span> seconds"</span>)
+    print(<span class="hljs-string">f"  Average FPS: <span class="hljs-subst">{frame_count/elapsed:<span class="hljs-number">.1</span>f}</span>"</span>)
+    print(<span class="hljs-string">f"  Total tracks: <span class="hljs-subst">{track_count}</span>"</span>)
+    print(<span class="hljs-string">f"  Thumbnails saved to: <span class="hljs-subst">{output_dir}</span>"</span>)
+
+<span class="hljs-comment"># Usage</span>
+track_plates_in_video(<span class="hljs-string">"traffic_video.mp4"</span>, <span class="hljs-string">"./tracked_plates"</span>, <span class="hljs-string">"Austria"</span>)
+</div></code></pre>
+<h3 id="real-time-stream-tracking">Real-time Stream Tracking</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">from</span> collections <span class="hljs-keyword">import</span> defaultdict
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">track_realtime_stream</span><span class="hljs-params">(rtsp_url, country=<span class="hljs-string">"Spain"</span>, duration_minutes=<span class="hljs-number">10</span>)</span>:</span>
+    <span class="hljs-string">"""Track plates in real-time stream with statistics"""</span>
+    
+    <span class="hljs-comment"># Setup</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    pool = engine.createProcessorPool(<span class="hljs-number">4</span>)
+    pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-comment"># Tracker setup</span>
+    tracker_params = simplelpr.PlateCandidateTrackerSetupParms(
+        triggerWindowInSec=<span class="hljs-number">2.0</span>,     <span class="hljs-comment"># Faster for real-time</span>
+        maxIdleTimeInSec=<span class="hljs-number">3.0</span>,
+        minTriggerFrameCount=<span class="hljs-number">2</span>,     <span class="hljs-comment"># Lower threshold for real-time</span>
+        thumbnailWidth=<span class="hljs-number">128</span>,         <span class="hljs-comment"># Smaller for performance</span>
+        thumbnailHeight=<span class="hljs-number">64</span>
+    )
+    
+    tracker = engine.createPlateCandidateTracker(tracker_params)
+    
+    <span class="hljs-comment"># Open stream</span>
+    video_source = engine.openVideoSource(
+        rtsp_url,
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">1280</span>, <span class="hljs-number">720</span>  <span class="hljs-comment"># Limit resolution for performance</span>
+    )
+    
+    print(<span class="hljs-string">f"Real-time tracking started: <span class="hljs-subst">{rtsp_url}</span>"</span>)
+    print(<span class="hljs-string">f"Duration: <span class="hljs-subst">{duration_minutes}</span> minutes"</span>)
+    
+    <span class="hljs-comment"># Statistics tracking</span>
+    stats = {
+        <span class="hljs-string">'frames_processed'</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-string">'total_detections'</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-string">'unique_plates'</span>: set(),
+        <span class="hljs-string">'plate_counts'</span>: defaultdict(int),
+        <span class="hljs-string">'tracks_created'</span>: <span class="hljs-number">0</span>
+    }
+    
+    start_time = time.time()
+    end_time = start_time + (duration_minutes * <span class="hljs-number">60</span>)
+    frame_queue = []
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">while</span> time.time() &lt; end_time:
+            frame = video_source.nextFrame()
+            <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">if</span> video_source.isLiveSource:
+                    video_source.reconnect()
+                    time.sleep(<span class="hljs-number">0.1</span>)
+                    <span class="hljs-keyword">continue</span>
+                <span class="hljs-keyword">else</span>:
+                    <span class="hljs-keyword">break</span>
+            
+            frame_queue.append(frame)
+            stats[<span class="hljs-string">'frames_processed'</span>] += <span class="hljs-number">1</span>
+            
+            <span class="hljs-comment"># Launch analysis</span>
+            success = pool.launchAnalyze(
+                streamId=<span class="hljs-number">0</span>,
+                requestId=frame.sequenceNumber,
+                timeoutInMs=simplelpr.TIMEOUT_IMMEDIATE,
+                frame=frame
+            )
+            
+            <span class="hljs-comment"># Process results</span>
+            <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+                result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_IMMEDIATE)
+                <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                    <span class="hljs-keyword">break</span>
+                
+                <span class="hljs-keyword">if</span> frame_queue <span class="hljs-keyword">and</span> result.requestId == frame_queue[<span class="hljs-number">0</span>].sequenceNumber:
+                    process_frame = frame_queue.pop(<span class="hljs-number">0</span>)
+                    
+                    <span class="hljs-comment"># Track plates</span>
+                    tracker_result = tracker.processFrameCandidates(result, process_frame)
+                    
+                    <span class="hljs-comment"># Process new tracks</span>
+                    <span class="hljs-keyword">for</span> track <span class="hljs-keyword">in</span> tracker_result.newTracks:
+                        stats[<span class="hljs-string">'tracks_created'</span>] += <span class="hljs-number">1</span>
+                        candidate = track.representativeCandidate
+                        
+                        <span class="hljs-keyword">if</span> candidate.matches:
+                            match = candidate.matches[<span class="hljs-number">0</span>]
+                            plate_text = match.text
+                            
+                            stats[<span class="hljs-string">'unique_plates'</span>].add(plate_text)
+                            stats[<span class="hljs-string">'plate_counts'</span>][plate_text] += <span class="hljs-number">1</span>
+                            
+                            print(<span class="hljs-string">f"[<span class="hljs-subst">{time.strftime(<span class="hljs-string">'%H:%M:%S'</span>)}</span>] NEW TRACK #<span class="hljs-subst">{stats[<span class="hljs-string">'tracks_created'</span>]}</span>: "</span>
+                                  <span class="hljs-string">f"<span class="hljs-subst">{plate_text}</span> (<span class="hljs-subst">{match.country}</span>, conf: <span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>) "</span>
+                                  <span class="hljs-string">f"- Frame <span class="hljs-subst">{track.representativeFrameId}</span>"</span>)
+            
+            <span class="hljs-comment"># Print stats every 30 seconds</span>
+            <span class="hljs-keyword">if</span> stats[<span class="hljs-string">'frames_processed'</span>] % <span class="hljs-number">300</span> == <span class="hljs-number">0</span>:  <span class="hljs-comment"># Assuming ~10 FPS</span>
+                elapsed = time.time() - start_time
+                fps = stats[<span class="hljs-string">'frames_processed'</span>] / elapsed
+                print(<span class="hljs-string">f"\n--- Stats after <span class="hljs-subst">{elapsed/<span class="hljs-number">60</span>:<span class="hljs-number">.1</span>f}</span> minutes ---"</span>)
+                print(<span class="hljs-string">f"Frames processed: <span class="hljs-subst">{stats[<span class="hljs-string">'frames_processed'</span>]}</span> (<span class="hljs-subst">{fps:<span class="hljs-number">.1</span>f}</span> FPS)"</span>)
+                print(<span class="hljs-string">f"Tracks created: <span class="hljs-subst">{stats[<span class="hljs-string">'tracks_created'</span>]}</span>"</span>)
+                print(<span class="hljs-string">f"Unique plates: <span class="hljs-subst">{len(stats[<span class="hljs-string">'unique_plates'</span>])}</span>"</span>)
+                print(<span class="hljs-string">"Most frequent plates:"</span>)
+                <span class="hljs-keyword">for</span> plate, count <span class="hljs-keyword">in</span> sorted(stats[<span class="hljs-string">'plate_counts'</span>].items(), 
+                                         key=<span class="hljs-keyword">lambda</span> x: x[<span class="hljs-number">1</span>], reverse=<span class="hljs-literal">True</span>)[:<span class="hljs-number">5</span>]:
+                    print(<span class="hljs-string">f"  <span class="hljs-subst">{plate}</span>: <span class="hljs-subst">{count}</span> times"</span>)
+                print()
+    
+    <span class="hljs-keyword">except</span> KeyboardInterrupt:
+        print(<span class="hljs-string">"Real-time tracking stopped by user"</span>)
+    
+    <span class="hljs-comment"># Final statistics</span>
+    elapsed = time.time() - start_time
+    print(<span class="hljs-string">f"\n=== Final Statistics ==="</span>)
+    print(<span class="hljs-string">f"Duration: <span class="hljs-subst">{elapsed/<span class="hljs-number">60</span>:<span class="hljs-number">.1</span>f}</span> minutes"</span>)
+    print(<span class="hljs-string">f"Frames processed: <span class="hljs-subst">{stats[<span class="hljs-string">'frames_processed'</span>]}</span>"</span>)
+    print(<span class="hljs-string">f"Average FPS: <span class="hljs-subst">{stats[<span class="hljs-string">'frames_processed'</span>]/elapsed:<span class="hljs-number">.1</span>f}</span>"</span>)
+    print(<span class="hljs-string">f"Total tracks: <span class="hljs-subst">{stats[<span class="hljs-string">'tracks_created'</span>]}</span>"</span>)
+    print(<span class="hljs-string">f"Unique plates detected: <span class="hljs-subst">{len(stats[<span class="hljs-string">'unique_plates'</span>])}</span>"</span>)
+    
+    <span class="hljs-keyword">return</span> stats
+
+<span class="hljs-comment"># Usage</span>
+<span class="hljs-comment"># stats = track_realtime_stream("rtsp://camera_ip:554/stream", "Germany", 5)</span>
+</div></code></pre>
+<hr>
+<h2 id="advanced-configuration">Advanced Configuration</h2>
+<h3 id="country-specific-configuration">Country-Specific Configuration</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">configure_engine_for_region</span><span class="hljs-params">(region=<span class="hljs-string">"europe"</span>)</span>:</span>
+    <span class="hljs-string">"""Configure engine for specific geographical regions"""</span>
+    
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-comment"># Define regional country groups (based on actually supported countries)</span>
+    regions = {
+        <span class="hljs-string">"europe"</span>: [<span class="hljs-string">"Spain"</span>, <span class="hljs-string">"Germany"</span>, <span class="hljs-string">"France"</span>, <span class="hljs-string">"Italy"</span>, <span class="hljs-string">"Netherlands"</span>, 
+                  <span class="hljs-string">"Belgium"</span>, <span class="hljs-string">"Austria"</span>, <span class="hljs-string">"Switzerland"</span>, <span class="hljs-string">"Portugal"</span>, <span class="hljs-string">"Sweden"</span>, 
+                  <span class="hljs-string">"Norway"</span>, <span class="hljs-string">"Denmark"</span>, <span class="hljs-string">"Finland"</span>, <span class="hljs-string">"Poland"</span>, <span class="hljs-string">"Czech-Republic"</span>],
+        <span class="hljs-string">"uk"</span>: [<span class="hljs-string">"UK-GreatBritain"</span>],
+        <span class="hljs-string">"south_america"</span>: [<span class="hljs-string">"Argentina"</span>, <span class="hljs-string">"Brazil"</span>, <span class="hljs-string">"Chile"</span>, <span class="hljs-string">"Colombia"</span>, <span class="hljs-string">"Peru"</span>, 
+                         <span class="hljs-string">"Ecuador"</span>, <span class="hljs-string">"Uruguay"</span>, <span class="hljs-string">"Venezuela"</span>, <span class="hljs-string">"Bolivia"</span>],
+        <span class="hljs-string">"oceania"</span>: [<span class="hljs-string">"Australia"</span>],
+        <span class="hljs-string">"north_america"</span>: [<span class="hljs-string">"Canada"</span>]  <span class="hljs-comment"># Note: USA and Mexico not currently supported</span>
+    }
+    
+    <span class="hljs-comment"># Disable all countries first</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    
+    <span class="hljs-comment"># Enable countries for the selected region</span>
+    <span class="hljs-keyword">if</span> region <span class="hljs-keyword">in</span> regions:
+        <span class="hljs-keyword">for</span> country <span class="hljs-keyword">in</span> regions[region]:
+            <span class="hljs-keyword">try</span>:
+                engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+                print(<span class="hljs-string">f"Enabled: <span class="hljs-subst">{country}</span>"</span>)
+            <span class="hljs-keyword">except</span> Exception:
+                print(<span class="hljs-string">f"Country not found: <span class="hljs-subst">{country}</span>"</span>)
+    <span class="hljs-keyword">else</span>:
+        print(<span class="hljs-string">f"Unknown region: <span class="hljs-subst">{region}</span>"</span>)
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+    
+    engine.realizeCountryWeights()
+    <span class="hljs-keyword">return</span> engine
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">advanced_processor_setup</span><span class="hljs-params">(engine, sensitivity=<span class="hljs-string">"normal"</span>)</span>:</span>
+    <span class="hljs-string">"""Advanced processor configuration"""</span>
+    
+    processor = engine.createProcessor()
+    
+    <span class="hljs-comment"># Configure based on expected conditions</span>
+    <span class="hljs-keyword">if</span> sensitivity == <span class="hljs-string">"high"</span>:
+        <span class="hljs-comment"># High sensitivity - detects more characters but may include noise and be slower</span>
+        processor.contrastSensitivityFactor = <span class="hljs-number">0.95</span>  <span class="hljs-comment"># Close to 1.0 for high sensitivity</span>
+        processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+        processor.cropToPlateRegionEnabled = <span class="hljs-literal">True</span>
+        
+    <span class="hljs-keyword">elif</span> sensitivity == <span class="hljs-string">"normal"</span>:
+        <span class="hljs-comment"># Balanced settings - recommended for most use cases</span>
+        <span class="hljs-comment"># processor.contrastSensitivityFactor uses default value (~0.9)</span>
+        processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+        processor.cropToPlateRegionEnabled = <span class="hljs-literal">False</span>
+        
+    <span class="hljs-keyword">elif</span> sensitivity == <span class="hljs-string">"low"</span>:
+        <span class="hljs-comment"># Low sensitivity - faster, fewer false positives, good for well-contrasted plates</span>
+        processor.contrastSensitivityFactor = <span class="hljs-number">0.3</span>  <span class="hljs-comment"># Lower for well-contrasted plates</span>
+        processor.plateRegionDetectionEnabled = <span class="hljs-literal">False</span>
+        processor.cropToPlateRegionEnabled = <span class="hljs-literal">False</span>
+    
+    <span class="hljs-keyword">return</span> processor
+
+<span class="hljs-comment"># Usage examples</span>
+engine = configure_engine_for_region(<span class="hljs-string">"europe"</span>)
+<span class="hljs-keyword">if</span> engine:
+    processor = advanced_processor_setup(engine, <span class="hljs-string">"normal"</span>)  <span class="hljs-comment"># Use normal instead of high</span>
+</div></code></pre>
+<h3 id="roi-region-of-interest-processing">ROI (Region of Interest) Processing</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_with_roi</span><span class="hljs-params">(video_path, roi_configs, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-string">"""Process video with multiple regions of interest"""</span>
+    
+    <span class="hljs-comment"># Setup engine</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    pool = engine.createProcessorPool(len(roi_configs))
+    pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    <span class="hljs-comment"># Open video</span>
+    video_source = engine.openVideoSource(
+        video_path,
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>
+    )
+    
+    print(<span class="hljs-string">f"Processing with <span class="hljs-subst">{len(roi_configs)}</span> ROI regions:"</span>)
+    <span class="hljs-keyword">for</span> i, roi_config <span class="hljs-keyword">in</span> enumerate(roi_configs):
+        print(<span class="hljs-string">f"  ROI <span class="hljs-subst">{i+<span class="hljs-number">1</span>}</span>: <span class="hljs-subst">{roi_config}</span>"</span>)
+    
+    detections_by_roi = {i: [] <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(len(roi_configs))}
+    frame_count = <span class="hljs-number">0</span>
+    
+    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+        frame = video_source.nextFrame()
+        <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">break</span>
+        
+        frame_count += <span class="hljs-number">1</span>
+        
+        <span class="hljs-comment"># Launch analysis for each ROI</span>
+        <span class="hljs-keyword">for</span> roi_id, roi_config <span class="hljs-keyword">in</span> enumerate(roi_configs):
+            roi = simplelpr.Rectangle()
+            roi.left = roi_config[<span class="hljs-string">'left'</span>]
+            roi.top = roi_config[<span class="hljs-string">'top'</span>]
+            roi.width = roi_config[<span class="hljs-string">'width'</span>]
+            roi.height = roi_config[<span class="hljs-string">'height'</span>]
+            
+            <span class="hljs-comment"># Use different stream IDs for different ROIs</span>
+            success = pool.launchAnalyze(
+                streamId=roi_id,
+                requestId=frame.sequenceNumber,
+                timeoutInMs=simplelpr.TIMEOUT_IMMEDIATE,
+                frame=frame,
+                roi=roi
+            )
+        
+        <span class="hljs-comment"># Collect results</span>
+        <span class="hljs-keyword">for</span> roi_id <span class="hljs-keyword">in</span> range(len(roi_configs)):
+            <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+                result = pool.pollNextResult(roi_id, simplelpr.TIMEOUT_IMMEDIATE)
+                <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                    <span class="hljs-keyword">break</span>
+                
+                <span class="hljs-keyword">if</span> result.candidates:
+                    <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> result.candidates:
+                        <span class="hljs-keyword">if</span> candidate.matches:
+                            match = candidate.matches[<span class="hljs-number">0</span>]
+                            detection = {
+                                <span class="hljs-string">'frame'</span>: frame_count,
+                                <span class="hljs-string">'roi'</span>: roi_id,
+                                <span class="hljs-string">'roi_name'</span>: roi_configs[roi_id].get(<span class="hljs-string">'name'</span>, <span class="hljs-string">f'ROI_<span class="hljs-subst">{roi_id}</span>'</span>),
+                                <span class="hljs-string">'text'</span>: match.text,
+                                <span class="hljs-string">'confidence'</span>: match.confidence,
+                                <span class="hljs-string">'timestamp'</span>: frame.timestamp
+                            }
+                            detections_by_roi[roi_id].append(detection)
+                            
+                            print(<span class="hljs-string">f"Frame <span class="hljs-subst">{frame_count}</span> - <span class="hljs-subst">{detection[<span class="hljs-string">'roi_name'</span>]}</span>: "</span>
+                                  <span class="hljs-string">f"<span class="hljs-subst">{match.text}</span> (<span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+    
+    <span class="hljs-comment"># Summary</span>
+    print(<span class="hljs-string">f"\nProcessing complete - <span class="hljs-subst">{frame_count}</span> frames:"</span>)
+    <span class="hljs-keyword">for</span> roi_id, detections <span class="hljs-keyword">in</span> detections_by_roi.items():
+        roi_name = roi_configs[roi_id].get(<span class="hljs-string">'name'</span>, <span class="hljs-string">f'ROI_<span class="hljs-subst">{roi_id}</span>'</span>)
+        print(<span class="hljs-string">f"  <span class="hljs-subst">{roi_name}</span>: <span class="hljs-subst">{len(detections)}</span> detections"</span>)
+    
+    <span class="hljs-keyword">return</span> detections_by_roi
+
+<span class="hljs-comment"># Usage</span>
+roi_configs = [
+    {
+        <span class="hljs-string">'name'</span>: <span class="hljs-string">'Lane_1'</span>,
+        <span class="hljs-string">'left'</span>: <span class="hljs-number">100</span>, <span class="hljs-string">'top'</span>: <span class="hljs-number">200</span>, <span class="hljs-string">'width'</span>: <span class="hljs-number">400</span>, <span class="hljs-string">'height'</span>: <span class="hljs-number">300</span>
+    },
+    {
+        <span class="hljs-string">'name'</span>: <span class="hljs-string">'Lane_2'</span>, 
+        <span class="hljs-string">'left'</span>: <span class="hljs-number">600</span>, <span class="hljs-string">'top'</span>: <span class="hljs-number">200</span>, <span class="hljs-string">'width'</span>: <span class="hljs-number">400</span>, <span class="hljs-string">'height'</span>: <span class="hljs-number">300</span>
+    },
+    {
+        <span class="hljs-string">'name'</span>: <span class="hljs-string">'Entrance'</span>,
+        <span class="hljs-string">'left'</span>: <span class="hljs-number">200</span>, <span class="hljs-string">'top'</span>: <span class="hljs-number">500</span>, <span class="hljs-string">'width'</span>: <span class="hljs-number">600</span>, <span class="hljs-string">'height'</span>: <span class="hljs-number">200</span>
+    }
+]
+
+<span class="hljs-comment"># detections = process_with_roi("traffic.mp4", roi_configs, "Germany")</span>
+</div></code></pre>
+<hr>
+<h2 id="common-patterns-and-best-practices">Common Patterns and Best Practices</h2>
+<h3 id="resource-management-pattern">Resource Management Pattern</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">from</span> contextlib <span class="hljs-keyword">import</span> contextmanager
+
+<span class="hljs-meta">@contextmanager</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">simplelpr_engine</span><span class="hljs-params">(country=<span class="hljs-string">"Spain"</span>, license_path=None)</span>:</span>
+    <span class="hljs-string">"""Context manager for SimpleLPR engine"""</span>
+    
+    <span class="hljs-comment"># Setup</span>
+    setup_params = simplelpr.EngineSetupParms()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-keyword">if</span> license_path:
+        engine.set_productKey(license_path)
+    
+    <span class="hljs-comment"># Configure country</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">yield</span> engine
+    <span class="hljs-keyword">finally</span>:
+        <span class="hljs-comment"># Cleanup is automatic in Python</span>
+        <span class="hljs-keyword">pass</span>
+
+<span class="hljs-meta">@contextmanager</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">simplelpr_processor</span><span class="hljs-params">(engine, sensitivity=<span class="hljs-string">"normal"</span>)</span>:</span>
+    <span class="hljs-string">"""Context manager for processor"""</span>
+    
+    processor = engine.createProcessor()
+    
+    <span class="hljs-comment"># Configure processor</span>
+    <span class="hljs-keyword">if</span> sensitivity == <span class="hljs-string">"high"</span>:
+        processor.contrastSensitivityFactor = <span class="hljs-number">0.3</span>
+        processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+        processor.cropToPlateRegionEnabled = <span class="hljs-literal">True</span>
+    <span class="hljs-keyword">elif</span> sensitivity == <span class="hljs-string">"normal"</span>:
+        processor.contrastSensitivityFactor = <span class="hljs-number">0.7</span>
+        processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+        processor.cropToPlateRegionEnabled = <span class="hljs-literal">False</span>
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">yield</span> processor
+    <span class="hljs-keyword">finally</span>:
+        <span class="hljs-comment"># Cleanup is automatic</span>
+        <span class="hljs-keyword">pass</span>
+
+<span class="hljs-comment"># Usage with context managers</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">analyze_with_context_manager</span><span class="hljs-params">(image_path, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-keyword">with</span> simplelpr_engine(country) <span class="hljs-keyword">as</span> engine:
+        <span class="hljs-keyword">with</span> simplelpr_processor(engine, <span class="hljs-string">"high"</span>) <span class="hljs-keyword">as</span> processor:
+            <span class="hljs-keyword">return</span> processor.analyze(image_path)
+
+<span class="hljs-comment"># candidates = analyze_with_context_manager("test.jpg", "Germany")</span>
+</div></code></pre>
+<h3 id="configuration-management">Configuration Management</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> json
+<span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SimpleLPRConfig</span>:</span>
+    <span class="hljs-string">"""Configuration management for SimpleLPR"""</span>
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, config_file=None)</span>:</span>
+        self.config = self._load_default_config()
+        <span class="hljs-keyword">if</span> config_file:
+            self.load_from_file(config_file)
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">_load_default_config</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-keyword">return</span> {
+            <span class="hljs-string">"engine"</span>: {
+                <span class="hljs-string">"cudaDeviceId"</span>: <span class="hljs-number">-1</span>,
+                <span class="hljs-string">"enableImageProcessingWithGPU"</span>: <span class="hljs-literal">False</span>,
+                <span class="hljs-string">"enableClassificationWithGPU"</span>: <span class="hljs-literal">False</span>,
+                <span class="hljs-string">"maxConcurrentImageProcessingOps"</span>: <span class="hljs-number">0</span>
+            },
+            <span class="hljs-string">"processing"</span>: {
+                <span class="hljs-string">"country"</span>: <span class="hljs-string">"Spain"</span>,
+                <span class="hljs-string">"contrastSensitivityFactor"</span>: <span class="hljs-number">0.9</span>,  <span class="hljs-comment"># Note: Default value (~0.9) recommended</span>
+                <span class="hljs-string">"plateRegionDetectionEnabled"</span>: <span class="hljs-literal">True</span>,
+                <span class="hljs-string">"cropToPlateRegionEnabled"</span>: <span class="hljs-literal">False</span>
+            },
+            <span class="hljs-string">"tracking"</span>: {
+                <span class="hljs-string">"triggerWindowInSec"</span>: <span class="hljs-number">3.0</span>,
+                <span class="hljs-string">"maxIdleTimeInSec"</span>: <span class="hljs-number">3.5</span>,
+                <span class="hljs-string">"minTriggerFrameCount"</span>: <span class="hljs-number">3</span>,
+                <span class="hljs-string">"thumbnailWidth"</span>: <span class="hljs-number">256</span>,
+                <span class="hljs-string">"thumbnailHeight"</span>: <span class="hljs-number">128</span>
+            },
+            <span class="hljs-string">"video"</span>: {
+                <span class="hljs-string">"frameFormat"</span>: <span class="hljs-string">"BGR24"</span>,
+                <span class="hljs-string">"maxWidth"</span>: <span class="hljs-number">-1</span>,
+                <span class="hljs-string">"maxHeight"</span>: <span class="hljs-number">-1</span>
+            }
+        }
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">load_from_file</span><span class="hljs-params">(self, config_file)</span>:</span>
+        <span class="hljs-string">"""Load configuration from JSON file"""</span>
+        <span class="hljs-keyword">try</span>:
+            <span class="hljs-keyword">with</span> open(config_file, <span class="hljs-string">'r'</span>) <span class="hljs-keyword">as</span> f:
+                file_config = json.load(f)
+            
+            <span class="hljs-comment"># Merge with defaults</span>
+            self._deep_update(self.config, file_config)
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            print(<span class="hljs-string">f"Warning: Could not load config file <span class="hljs-subst">{config_file}</span>: <span class="hljs-subst">{e}</span>"</span>)
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">save_to_file</span><span class="hljs-params">(self, config_file)</span>:</span>
+        <span class="hljs-string">"""Save current configuration to JSON file"""</span>
+        <span class="hljs-keyword">with</span> open(config_file, <span class="hljs-string">'w'</span>) <span class="hljs-keyword">as</span> f:
+            json.dump(self.config, f, indent=<span class="hljs-number">2</span>)
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">_deep_update</span><span class="hljs-params">(self, base_dict, update_dict)</span>:</span>
+        <span class="hljs-string">"""Deep update dictionary"""</span>
+        <span class="hljs-keyword">for</span> key, value <span class="hljs-keyword">in</span> update_dict.items():
+            <span class="hljs-keyword">if</span> key <span class="hljs-keyword">in</span> base_dict <span class="hljs-keyword">and</span> isinstance(base_dict[key], dict) <span class="hljs-keyword">and</span> isinstance(value, dict):
+                self._deep_update(base_dict[key], value)
+            <span class="hljs-keyword">else</span>:
+                base_dict[key] = value
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">create_engine</span><span class="hljs-params">(self, license_path=None)</span>:</span>
+        <span class="hljs-string">"""Create engine with current configuration"""</span>
+        
+        <span class="hljs-comment"># Setup parameters</span>
+        setup_params = simplelpr.EngineSetupParms()
+        engine_config = self.config[<span class="hljs-string">"engine"</span>]
+        
+        setup_params.cudaDeviceId = engine_config[<span class="hljs-string">"cudaDeviceId"</span>]
+        setup_params.enableImageProcessingWithGPU = engine_config[<span class="hljs-string">"enableImageProcessingWithGPU"</span>]
+        setup_params.enableClassificationWithGPU = engine_config[<span class="hljs-string">"enableClassificationWithGPU"</span>]
+        setup_params.maxConcurrentImageProcessingOps = engine_config[<span class="hljs-string">"maxConcurrentImageProcessingOps"</span>]
+        
+        <span class="hljs-comment"># Create engine</span>
+        engine = simplelpr.SimpleLPR(setup_params)
+        
+        <span class="hljs-keyword">if</span> license_path:
+            engine.set_productKey(license_path)
+        
+        <span class="hljs-comment"># Configure country</span>
+        country = self.config[<span class="hljs-string">"processing"</span>][<span class="hljs-string">"country"</span>]
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+            engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+        engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+        engine.realizeCountryWeights()
+        
+        <span class="hljs-keyword">return</span> engine
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">configure_processor</span><span class="hljs-params">(self, processor)</span>:</span>
+        <span class="hljs-string">"""Configure processor with current settings"""</span>
+        proc_config = self.config[<span class="hljs-string">"processing"</span>]
+        
+        <span class="hljs-comment"># Only set contrast sensitivity if explicitly configured (not default)</span>
+        <span class="hljs-keyword">if</span> proc_config[<span class="hljs-string">"contrastSensitivityFactor"</span>] != <span class="hljs-number">0.9</span>:
+            processor.contrastSensitivityFactor = proc_config[<span class="hljs-string">"contrastSensitivityFactor"</span>]
+        
+        processor.plateRegionDetectionEnabled = proc_config[<span class="hljs-string">"plateRegionDetectionEnabled"</span>]
+        processor.cropToPlateRegionEnabled = proc_config[<span class="hljs-string">"cropToPlateRegionEnabled"</span>]
+        
+        <span class="hljs-keyword">return</span> processor
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_frame_format</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-string">"""Get frame format enum"""</span>
+        format_str = self.config[<span class="hljs-string">"video"</span>][<span class="hljs-string">"frameFormat"</span>]
+        <span class="hljs-keyword">if</span> format_str == <span class="hljs-string">"GRAY8"</span>:
+            <span class="hljs-keyword">return</span> simplelpr.FrameFormat.FRAME_FORMAT_GRAY8
+        <span class="hljs-keyword">else</span>:
+            <span class="hljs-keyword">return</span> simplelpr.FrameFormat.FRAME_FORMAT_BGR24
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_tracker_params</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-string">"""Get tracker parameters"""</span>
+        track_config = self.config[<span class="hljs-string">"tracking"</span>]
+        
+        <span class="hljs-keyword">return</span> simplelpr.PlateCandidateTrackerSetupParms(
+            triggerWindowInSec=track_config[<span class="hljs-string">"triggerWindowInSec"</span>],
+            maxIdleTimeInSec=track_config[<span class="hljs-string">"maxIdleTimeInSec"</span>],
+            minTriggerFrameCount=track_config[<span class="hljs-string">"minTriggerFrameCount"</span>],
+            thumbnailWidth=track_config[<span class="hljs-string">"thumbnailWidth"</span>],
+            thumbnailHeight=track_config[<span class="hljs-string">"thumbnailHeight"</span>]
+        )
+
+<span class="hljs-comment"># Usage</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_with_config</span><span class="hljs-params">(image_path, config_file=<span class="hljs-string">"simplelpr_config.json"</span>)</span>:</span>
+    <span class="hljs-string">"""Process image using configuration file"""</span>
+    
+    config = SimpleLPRConfig(config_file)
+    
+    engine = config.create_engine()
+    processor = engine.createProcessor()
+    config.configure_processor(processor)
+    
+    <span class="hljs-keyword">return</span> processor.analyze(image_path)
+
+<span class="hljs-comment"># Example config file content:</span>
+example_config = {
+    <span class="hljs-string">"processing"</span>: {
+        <span class="hljs-string">"country"</span>: <span class="hljs-string">"Germany"</span>,
+        <span class="hljs-string">"contrastSensitivityFactor"</span>: <span class="hljs-number">0.5</span>,
+        <span class="hljs-string">"plateRegionDetectionEnabled"</span>: <span class="hljs-literal">True</span>,
+        <span class="hljs-string">"cropToPlateRegionEnabled"</span>: <span class="hljs-literal">True</span>
+    },
+    <span class="hljs-string">"tracking"</span>: {
+        <span class="hljs-string">"triggerWindowInSec"</span>: <span class="hljs-number">2.0</span>,
+        <span class="hljs-string">"minTriggerFrameCount"</span>: <span class="hljs-number">2</span>
+    }
+}
+
+<span class="hljs-comment"># Save example config</span>
+<span class="hljs-comment"># with open("example_config.json", "w") as f:</span>
+<span class="hljs-comment">#     json.dump(example_config, f, indent=2)</span>
+</div></code></pre>
+<h3 id="logging-and-monitoring">Logging and Monitoring</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> logging
+<span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">from</span> datetime <span class="hljs-keyword">import</span> datetime
+
+<span class="hljs-comment"># Setup logging</span>
+logging.basicConfig(
+    level=logging.INFO,
+    format=<span class="hljs-string">'%(asctime)s - %(name)s - %(levelname)s - %(message)s'</span>,
+    handlers=[
+        logging.FileHandler(<span class="hljs-string">'simplelpr.log'</span>),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(<span class="hljs-string">'SimpleLPR'</span>)
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SimpleLPRMonitor</span>:</span>
+    <span class="hljs-string">"""Monitoring and logging wrapper for SimpleLPR"""</span>
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+        self.country = country
+        self.stats = {
+            <span class="hljs-string">'total_frames'</span>: <span class="hljs-number">0</span>,
+            <span class="hljs-string">'total_detections'</span>: <span class="hljs-number">0</span>,
+            <span class="hljs-string">'processing_times'</span>: [],
+            <span class="hljs-string">'start_time'</span>: <span class="hljs-literal">None</span>,
+            <span class="hljs-string">'errors'</span>: <span class="hljs-number">0</span>
+        }
+        
+        self.engine = <span class="hljs-literal">None</span>
+        self.processor = <span class="hljs-literal">None</span>
+        
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">initialize</span><span class="hljs-params">(self, license_path=None)</span>:</span>
+        <span class="hljs-string">"""Initialize engine and processor with logging"""</span>
+        <span class="hljs-keyword">try</span>:
+            logger.info(<span class="hljs-string">"Initializing SimpleLPR engine..."</span>)
+            
+            setup_params = simplelpr.EngineSetupParms()
+            self.engine = simplelpr.SimpleLPR(setup_params)
+            
+            <span class="hljs-keyword">if</span> license_path:
+                self.engine.set_productKey(license_path)
+                logger.info(<span class="hljs-string">f"License key loaded from: <span class="hljs-subst">{license_path}</span>"</span>)
+            
+            <span class="hljs-comment"># Configure country</span>
+            <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(self.engine.numSupportedCountries):
+                self.engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+            self.engine.set_countryWeight(self.country, <span class="hljs-number">1.0</span>)
+            self.engine.realizeCountryWeights()
+            
+            logger.info(<span class="hljs-string">f"Engine configured for country: <span class="hljs-subst">{self.country}</span>"</span>)
+            
+            <span class="hljs-comment"># Create processor</span>
+            self.processor = self.engine.createProcessor()
+            self.processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+            
+            version = self.engine.versionNumber
+            logger.info(<span class="hljs-string">f"SimpleLPR initialized successfully - Version: "</span>
+                       <span class="hljs-string">f"<span class="hljs-subst">{version.A}</span>.<span class="hljs-subst">{version.B}</span>.<span class="hljs-subst">{version.C}</span>.<span class="hljs-subst">{version.D}</span>"</span>)
+            
+            self.stats[<span class="hljs-string">'start_time'</span>] = time.time()
+            
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            logger.error(<span class="hljs-string">f"Failed to initialize SimpleLPR: <span class="hljs-subst">{e}</span>"</span>)
+            <span class="hljs-keyword">raise</span>
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">analyze_image</span><span class="hljs-params">(self, image_path)</span>:</span>
+        <span class="hljs-string">"""Analyze image with monitoring"""</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> self.processor:
+            <span class="hljs-keyword">raise</span> RuntimeError(<span class="hljs-string">"SimpleLPR not initialized"</span>)
+        
+        start_time = time.time()
+        
+        <span class="hljs-keyword">try</span>:
+            logger.debug(<span class="hljs-string">f"Analyzing image: <span class="hljs-subst">{image_path}</span>"</span>)
+            
+            candidates = self.processor.analyze(image_path)
+            
+            processing_time = time.time() - start_time
+            self.stats[<span class="hljs-string">'processing_times'</span>].append(processing_time)
+            self.stats[<span class="hljs-string">'total_frames'</span>] += <span class="hljs-number">1</span>
+            self.stats[<span class="hljs-string">'total_detections'</span>] += len(candidates)
+            
+            logger.info(<span class="hljs-string">f"Image processed in <span class="hljs-subst">{processing_time:<span class="hljs-number">.3</span>f}</span>s - "</span>
+                       <span class="hljs-string">f"Found <span class="hljs-subst">{len(candidates)}</span> candidates"</span>)
+            
+            <span class="hljs-comment"># Log detailed results</span>
+            <span class="hljs-keyword">for</span> i, candidate <span class="hljs-keyword">in</span> enumerate(candidates):
+                <span class="hljs-keyword">if</span> candidate.matches:
+                    match = candidate.matches[<span class="hljs-number">0</span>]
+                    logger.info(<span class="hljs-string">f"  Candidate <span class="hljs-subst">{i+<span class="hljs-number">1</span>}</span>: '<span class="hljs-subst">{match.text}</span>' "</span>
+                               <span class="hljs-string">f"(<span class="hljs-subst">{match.country}</span>, conf: <span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+            
+            <span class="hljs-keyword">return</span> candidates
+            
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            self.stats[<span class="hljs-string">'errors'</span>] += <span class="hljs-number">1</span>
+            logger.error(<span class="hljs-string">f"Error analyzing <span class="hljs-subst">{image_path}</span>: <span class="hljs-subst">{e}</span>"</span>)
+            <span class="hljs-keyword">raise</span>
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process_video_with_monitoring</span><span class="hljs-params">(self, video_path, max_frames=None)</span>:</span>
+        <span class="hljs-string">"""Process video with detailed monitoring"""</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> self.engine:
+            <span class="hljs-keyword">raise</span> RuntimeError(<span class="hljs-string">"SimpleLPR not initialized"</span>)
+        
+        logger.info(<span class="hljs-string">f"Starting video processing: <span class="hljs-subst">{video_path}</span>"</span>)
+        
+        <span class="hljs-keyword">try</span>:
+            video_source = self.engine.openVideoSource(
+                video_path,
+                simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+                <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>
+            )
+            
+            logger.info(<span class="hljs-string">f"Video opened - Live source: <span class="hljs-subst">{video_source.isLiveSource}</span>"</span>)
+            
+            frame_count = <span class="hljs-number">0</span>
+            total_detections = <span class="hljs-number">0</span>
+            
+            <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+                frame = video_source.nextFrame()
+                <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                    <span class="hljs-keyword">break</span>
+                
+                frame_count += <span class="hljs-number">1</span>
+                start_time = time.time()
+                
+                <span class="hljs-keyword">try</span>:
+                    candidates = self.processor.analyze(frame)
+                    processing_time = time.time() - start_time
+                    
+                    self.stats[<span class="hljs-string">'processing_times'</span>].append(processing_time)
+                    self.stats[<span class="hljs-string">'total_frames'</span>] += <span class="hljs-number">1</span>
+                    self.stats[<span class="hljs-string">'total_detections'</span>] += len(candidates)
+                    total_detections += len(candidates)
+                    
+                    <span class="hljs-keyword">if</span> candidates:
+                        <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> candidates:
+                            <span class="hljs-keyword">if</span> candidate.matches:
+                                match = candidate.matches[<span class="hljs-number">0</span>]
+                                logger.info(<span class="hljs-string">f"Frame <span class="hljs-subst">{frame_count}</span> (<span class="hljs-subst">{frame.timestamp:<span class="hljs-number">.2</span>f}</span>s): "</span>
+                                           <span class="hljs-string">f"'<span class="hljs-subst">{match.text}</span>' (<span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+                    
+                    <span class="hljs-comment"># Progress logging</span>
+                    <span class="hljs-keyword">if</span> frame_count % <span class="hljs-number">100</span> == <span class="hljs-number">0</span>:
+                        avg_time = sum(self.stats[<span class="hljs-string">'processing_times'</span>][<span class="hljs-number">-100</span>:]) / min(<span class="hljs-number">100</span>, len(self.stats[<span class="hljs-string">'processing_times'</span>]))
+                        logger.info(<span class="hljs-string">f"Processed <span class="hljs-subst">{frame_count}</span> frames - "</span>
+                                   <span class="hljs-string">f"Avg processing time: <span class="hljs-subst">{avg_time:<span class="hljs-number">.3</span>f}</span>s"</span>)
+                
+                <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                    self.stats[<span class="hljs-string">'errors'</span>] += <span class="hljs-number">1</span>
+                    logger.error(<span class="hljs-string">f"Error processing frame <span class="hljs-subst">{frame_count}</span>: <span class="hljs-subst">{e}</span>"</span>)
+                
+                <span class="hljs-keyword">if</span> max_frames <span class="hljs-keyword">and</span> frame_count &gt;= max_frames:
+                    <span class="hljs-keyword">break</span>
+            
+            logger.info(<span class="hljs-string">f"Video processing complete - <span class="hljs-subst">{frame_count}</span> frames, "</span>
+                       <span class="hljs-string">f"<span class="hljs-subst">{total_detections}</span> total detections"</span>)
+            
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            logger.error(<span class="hljs-string">f"Video processing failed: <span class="hljs-subst">{e}</span>"</span>)
+            <span class="hljs-keyword">raise</span>
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_statistics</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-string">"""Get processing statistics"""</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> self.stats[<span class="hljs-string">'start_time'</span>]:
+            <span class="hljs-keyword">return</span> {}
+        
+        elapsed = time.time() - self.stats[<span class="hljs-string">'start_time'</span>]
+        avg_processing_time = (sum(self.stats[<span class="hljs-string">'processing_times'</span>]) / 
+                             len(self.stats[<span class="hljs-string">'processing_times'</span>])) <span class="hljs-keyword">if</span> self.stats[<span class="hljs-string">'processing_times'</span>] <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+        
+        <span class="hljs-keyword">return</span> {
+            <span class="hljs-string">'elapsed_time'</span>: elapsed,
+            <span class="hljs-string">'total_frames'</span>: self.stats[<span class="hljs-string">'total_frames'</span>],
+            <span class="hljs-string">'total_detections'</span>: self.stats[<span class="hljs-string">'total_detections'</span>],
+            <span class="hljs-string">'avg_processing_time'</span>: avg_processing_time,
+            <span class="hljs-string">'frames_per_second'</span>: self.stats[<span class="hljs-string">'total_frames'</span>] / elapsed <span class="hljs-keyword">if</span> elapsed &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>,
+            <span class="hljs-string">'detections_per_frame'</span>: (self.stats[<span class="hljs-string">'total_detections'</span>] / 
+                                   self.stats[<span class="hljs-string">'total_frames'</span>]) <span class="hljs-keyword">if</span> self.stats[<span class="hljs-string">'total_frames'</span>] &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>,
+            <span class="hljs-string">'errors'</span>: self.stats[<span class="hljs-string">'errors'</span>]
+        }
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">log_final_statistics</span><span class="hljs-params">(self)</span>:</span>
+        <span class="hljs-string">"""Log final processing statistics"""</span>
+        stats = self.get_statistics()
+        
+        logger.info(<span class="hljs-string">"=== Final Processing Statistics ==="</span>)
+        logger.info(<span class="hljs-string">f"Total processing time: <span class="hljs-subst">{stats[<span class="hljs-string">'elapsed_time'</span>]:<span class="hljs-number">.1</span>f}</span> seconds"</span>)
+        logger.info(<span class="hljs-string">f"Total frames processed: <span class="hljs-subst">{stats[<span class="hljs-string">'total_frames'</span>]}</span>"</span>)
+        logger.info(<span class="hljs-string">f"Total detections: <span class="hljs-subst">{stats[<span class="hljs-string">'total_detections'</span>]}</span>"</span>)
+        logger.info(<span class="hljs-string">f"Average processing time per frame: <span class="hljs-subst">{stats[<span class="hljs-string">'avg_processing_time'</span>]:<span class="hljs-number">.3</span>f}</span>s"</span>)
+        logger.info(<span class="hljs-string">f"Average frames per second: <span class="hljs-subst">{stats[<span class="hljs-string">'frames_per_second'</span>]:<span class="hljs-number">.1</span>f}</span>"</span>)
+        logger.info(<span class="hljs-string">f"Average detections per frame: <span class="hljs-subst">{stats[<span class="hljs-string">'detections_per_frame'</span>]:<span class="hljs-number">.2</span>f}</span>"</span>)
+        logger.info(<span class="hljs-string">f"Errors encountered: <span class="hljs-subst">{stats[<span class="hljs-string">'errors'</span>]}</span>"</span>)
+
+<span class="hljs-comment"># Usage</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">monitored_processing_example</span><span class="hljs-params">()</span>:</span>
+    monitor = SimpleLPRMonitor(<span class="hljs-string">"Germany"</span>)
+    
+    <span class="hljs-keyword">try</span>:
+        monitor.initialize()
+        
+        <span class="hljs-comment"># Process some images</span>
+        <span class="hljs-comment"># candidates = monitor.analyze_image("test.jpg")</span>
+        
+        <span class="hljs-comment"># Process video</span>
+        <span class="hljs-comment"># monitor.process_video_with_monitoring("traffic.mp4", max_frames=500)</span>
+        
+    <span class="hljs-keyword">finally</span>:
+        monitor.log_final_statistics()
+</div></code></pre>
+<hr>
+<h2 id="error-handling">Error Handling</h2>
+<h3 id="comprehensive-error-handling-patterns">Comprehensive Error Handling Patterns</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> logging
+
+logger = logging.getLogger(__name__)
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SimpleLPRError</span><span class="hljs-params">(Exception)</span>:</span>
+    <span class="hljs-string">"""Custom exception for SimpleLPR operations"""</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SimpleLPRLicenseError</span><span class="hljs-params">(SimpleLPRError)</span>:</span>
+    <span class="hljs-string">"""License-related errors"""</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SimpleLPRProcessingError</span><span class="hljs-params">(SimpleLPRError)</span>:</span>
+    <span class="hljs-string">"""Processing-related errors"""</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">safe_engine_creation</span><span class="hljs-params">(license_path=None, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-string">"""Safely create and configure SimpleLPR engine"""</span>
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-comment"># Create engine</span>
+        setup_params = simplelpr.EngineSetupParms()
+        engine = simplelpr.SimpleLPR(setup_params)
+        
+        <span class="hljs-comment"># Set license if provided</span>
+        <span class="hljs-keyword">if</span> license_path:
+            <span class="hljs-keyword">try</span>:
+                engine.set_productKey(license_path)
+                logger.info(<span class="hljs-string">"License key applied successfully"</span>)
+            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                <span class="hljs-keyword">raise</span> SimpleLPRLicenseError(<span class="hljs-string">f"Failed to set license key: <span class="hljs-subst">{e}</span>"</span>)
+        
+        <span class="hljs-comment"># Configure countries</span>
+        <span class="hljs-keyword">try</span>:
+            available_countries = []
+            <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+                country_code = engine.get_countryCode(i)
+                available_countries.append(country_code)
+                engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+            
+            <span class="hljs-comment"># Check if requested country is available</span>
+            <span class="hljs-keyword">if</span> country <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> available_countries:
+                logger.warning(<span class="hljs-string">f"Country '<span class="hljs-subst">{country}</span>' not found. Available: <span class="hljs-subst">{available_countries}</span>"</span>)
+                <span class="hljs-comment"># Use first available country as fallback</span>
+                country = available_countries[<span class="hljs-number">0</span>] <span class="hljs-keyword">if</span> available_countries <span class="hljs-keyword">else</span> <span class="hljs-literal">None</span>
+                
+            <span class="hljs-keyword">if</span> country:
+                engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+                engine.realizeCountryWeights()
+                logger.info(<span class="hljs-string">f"Engine configured for country: <span class="hljs-subst">{country}</span>"</span>)
+            <span class="hljs-keyword">else</span>:
+                <span class="hljs-keyword">raise</span> SimpleLPRError(<span class="hljs-string">"No countries available"</span>)
+                
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            <span class="hljs-keyword">raise</span> SimpleLPRError(<span class="hljs-string">f"Failed to configure countries: <span class="hljs-subst">{e}</span>"</span>)
+        
+        <span class="hljs-keyword">return</span> engine, country
+        
+    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+        logger.error(<span class="hljs-string">f"Engine creation failed: <span class="hljs-subst">{e}</span>"</span>)
+        <span class="hljs-keyword">raise</span>
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">safe_image_analysis</span><span class="hljs-params">(processor, image_input, input_type=<span class="hljs-string">"file"</span>)</span>:</span>
+    <span class="hljs-string">"""Safely analyze image with proper error handling"""</span>
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">if</span> input_type == <span class="hljs-string">"file"</span>:
+            <span class="hljs-comment"># Check if file exists</span>
+            <span class="hljs-keyword">import</span> os
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> os.path.exists(image_input):
+                <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">f"Image file not found: <span class="hljs-subst">{image_input}</span>"</span>)
+            
+            candidates = processor.analyze(image_input)
+            
+        <span class="hljs-keyword">elif</span> input_type == <span class="hljs-string">"bytes"</span>:
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> image_input:
+                <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">"Empty image data provided"</span>)
+            
+            candidates = processor.analyze(image_input)
+            
+        <span class="hljs-keyword">elif</span> input_type == <span class="hljs-string">"buffer"</span>:
+            <span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> isinstance(image_input, np.ndarray):
+                <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">"Invalid buffer type - expected numpy array"</span>)
+            
+            <span class="hljs-keyword">if</span> image_input.size == <span class="hljs-number">0</span>:
+                <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">"Empty image buffer"</span>)
+            
+            candidates = processor.analyze(image_input)
+            
+        <span class="hljs-keyword">else</span>:
+            <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">f"Unknown input type: <span class="hljs-subst">{input_type}</span>"</span>)
+        
+        <span class="hljs-keyword">return</span> candidates
+        
+    <span class="hljs-keyword">except</span> SimpleLPRProcessingError:
+        <span class="hljs-keyword">raise</span>  <span class="hljs-comment"># Re-raise our custom errors</span>
+    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+        <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">f"Analysis failed: <span class="hljs-subst">{e}</span>"</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">robust_video_processing</span><span class="hljs-params">(video_path, country=<span class="hljs-string">"Spain"</span>, license_path=None)</span>:</span>
+    <span class="hljs-string">"""Robust video processing with error handling and recovery"""</span>
+    
+    engine = <span class="hljs-literal">None</span>
+    processor = <span class="hljs-literal">None</span>
+    video_source = <span class="hljs-literal">None</span>
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-comment"># Initialize engine</span>
+        engine, actual_country = safe_engine_creation(license_path, country)
+        processor = engine.createProcessor()
+        processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+        
+        <span class="hljs-comment"># Open video with retry logic</span>
+        max_retries = <span class="hljs-number">3</span>
+        <span class="hljs-keyword">for</span> attempt <span class="hljs-keyword">in</span> range(max_retries):
+            <span class="hljs-keyword">try</span>:
+                video_source = engine.openVideoSource(
+                    video_path,
+                    simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+                    <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>
+                )
+                logger.info(<span class="hljs-string">f"Video opened successfully on attempt <span class="hljs-subst">{attempt + <span class="hljs-number">1</span>}</span>"</span>)
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                logger.warning(<span class="hljs-string">f"Video open attempt <span class="hljs-subst">{attempt + <span class="hljs-number">1</span>}</span> failed: <span class="hljs-subst">{e}</span>"</span>)
+                <span class="hljs-keyword">if</span> attempt == max_retries - <span class="hljs-number">1</span>:
+                    <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">f"Failed to open video after <span class="hljs-subst">{max_retries}</span> attempts"</span>)
+                time.sleep(<span class="hljs-number">1</span>)
+        
+        <span class="hljs-comment"># Process video with error recovery</span>
+        frame_count = <span class="hljs-number">0</span>
+        consecutive_errors = <span class="hljs-number">0</span>
+        max_consecutive_errors = <span class="hljs-number">10</span>
+        results = []
+        
+        <span class="hljs-keyword">while</span> consecutive_errors &lt; max_consecutive_errors:
+            <span class="hljs-keyword">try</span>:
+                frame = video_source.nextFrame()
+                <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                    logger.info(<span class="hljs-string">"End of video reached"</span>)
+                    <span class="hljs-keyword">break</span>
+                
+                frame_count += <span class="hljs-number">1</span>
+                
+                <span class="hljs-comment"># Analyze frame</span>
+                candidates = safe_image_analysis(processor, frame, <span class="hljs-string">"frame"</span>)
+                consecutive_errors = <span class="hljs-number">0</span>  <span class="hljs-comment"># Reset error counter on success</span>
+                
+                <span class="hljs-comment"># Process results</span>
+                <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> candidates:
+                    <span class="hljs-keyword">if</span> candidate.matches:
+                        match = candidate.matches[<span class="hljs-number">0</span>]
+                        result = {
+                            <span class="hljs-string">'frame'</span>: frame_count,
+                            <span class="hljs-string">'timestamp'</span>: frame.timestamp,
+                            <span class="hljs-string">'text'</span>: match.text,
+                            <span class="hljs-string">'country'</span>: match.country,
+                            <span class="hljs-string">'confidence'</span>: match.confidence
+                        }
+                        results.append(result)
+                        logger.info(<span class="hljs-string">f"Frame <span class="hljs-subst">{frame_count}</span>: <span class="hljs-subst">{match.text}</span> (<span class="hljs-subst">{match.confidence:<span class="hljs-number">.3</span>f}</span>)"</span>)
+                
+            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                consecutive_errors += <span class="hljs-number">1</span>
+                logger.error(<span class="hljs-string">f"Frame <span class="hljs-subst">{frame_count}</span> processing error (<span class="hljs-subst">{consecutive_errors}</span>/<span class="hljs-subst">{max_consecutive_errors}</span>): <span class="hljs-subst">{e}</span>"</span>)
+                
+                <span class="hljs-keyword">if</span> consecutive_errors &gt;= max_consecutive_errors:
+                    <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">f"Too many consecutive errors (<span class="hljs-subst">{max_consecutive_errors}</span>)"</span>)
+        
+        logger.info(<span class="hljs-string">f"Video processing completed - <span class="hljs-subst">{frame_count}</span> frames, <span class="hljs-subst">{len(results)}</span> detections"</span>)
+        <span class="hljs-keyword">return</span> results
+        
+    <span class="hljs-keyword">except</span> SimpleLPRLicenseError <span class="hljs-keyword">as</span> e:
+        logger.error(<span class="hljs-string">f"License error: <span class="hljs-subst">{e}</span>"</span>)
+        <span class="hljs-keyword">raise</span>
+    <span class="hljs-keyword">except</span> SimpleLPRProcessingError <span class="hljs-keyword">as</span> e:
+        logger.error(<span class="hljs-string">f"Processing error: <span class="hljs-subst">{e}</span>"</span>)
+        <span class="hljs-keyword">raise</span>
+    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+        logger.error(<span class="hljs-string">f"Unexpected error: <span class="hljs-subst">{e}</span>"</span>)
+        <span class="hljs-keyword">raise</span> SimpleLPRError(<span class="hljs-string">f"Video processing failed: <span class="hljs-subst">{e}</span>"</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">safe_processor_pool_operation</span><span class="hljs-params">(engine, tasks, max_workers=<span class="hljs-number">4</span>)</span>:</span>
+    <span class="hljs-string">"""Safely execute processor pool operations with error handling"""</span>
+    
+    pool = <span class="hljs-literal">None</span>
+    
+    <span class="hljs-keyword">try</span>:
+        pool = engine.createProcessorPool(max_workers)
+        pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+        
+        <span class="hljs-comment"># Launch all tasks</span>
+        launched_tasks = []
+        failed_launches = []
+        
+        <span class="hljs-keyword">for</span> i, task <span class="hljs-keyword">in</span> enumerate(tasks):
+            <span class="hljs-keyword">try</span>:
+                <span class="hljs-keyword">if</span> task[<span class="hljs-string">'type'</span>] == <span class="hljs-string">'image_file'</span>:
+                    success = pool.launchAnalyze(
+                        streamId=<span class="hljs-number">0</span>,
+                        requestId=i,
+                        timestampInSec=float(i),
+                        timeoutInMs=simplelpr.TIMEOUT_INFINITE,
+                        imgPath=task[<span class="hljs-string">'path'</span>]
+                    )
+                <span class="hljs-keyword">elif</span> task[<span class="hljs-string">'type'</span>] == <span class="hljs-string">'video_frame'</span>:
+                    success = pool.launchAnalyze(
+                        streamId=<span class="hljs-number">0</span>,
+                        requestId=i,
+                        timeoutInMs=simplelpr.TIMEOUT_INFINITE,
+                        frame=task[<span class="hljs-string">'frame'</span>]
+                    )
+                <span class="hljs-keyword">else</span>:
+                    logger.error(<span class="hljs-string">f"Unknown task type: <span class="hljs-subst">{task[<span class="hljs-string">'type'</span>]}</span>"</span>)
+                    <span class="hljs-keyword">continue</span>
+                
+                <span class="hljs-keyword">if</span> success:
+                    launched_tasks.append((i, task))
+                <span class="hljs-keyword">else</span>:
+                    failed_launches.append((i, task))
+                    logger.warning(<span class="hljs-string">f"Failed to launch task <span class="hljs-subst">{i}</span>: <span class="hljs-subst">{task}</span>"</span>)
+                    
+            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                failed_launches.append((i, task))
+                logger.error(<span class="hljs-string">f"Error launching task <span class="hljs-subst">{i}</span>: <span class="hljs-subst">{e}</span>"</span>)
+        
+        logger.info(<span class="hljs-string">f"Launched <span class="hljs-subst">{len(launched_tasks)}</span> tasks, <span class="hljs-subst">{len(failed_launches)}</span> failed"</span>)
+        
+        <span class="hljs-comment"># Collect results</span>
+        results = {}
+        completed = <span class="hljs-number">0</span>
+        timeout_count = <span class="hljs-number">0</span>
+        max_timeouts = <span class="hljs-number">5</span>
+        
+        <span class="hljs-keyword">while</span> completed &lt; len(launched_tasks) <span class="hljs-keyword">and</span> timeout_count &lt; max_timeouts:
+            <span class="hljs-keyword">try</span>:
+                result = pool.pollNextResult(<span class="hljs-number">0</span>, <span class="hljs-number">5000</span>)  <span class="hljs-comment"># 5 second timeout</span>
+                
+                <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                    timeout_count += <span class="hljs-number">1</span>
+                    logger.warning(<span class="hljs-string">f"Timeout waiting for results (<span class="hljs-subst">{timeout_count}</span>/<span class="hljs-subst">{max_timeouts}</span>)"</span>)
+                    <span class="hljs-keyword">continue</span>
+                
+                timeout_count = <span class="hljs-number">0</span>  <span class="hljs-comment"># Reset timeout counter</span>
+                completed += <span class="hljs-number">1</span>
+                task_id = result.requestId
+                
+                <span class="hljs-keyword">if</span> result.errorInfo:
+                    logger.error(<span class="hljs-string">f"Task <span class="hljs-subst">{task_id}</span> failed: <span class="hljs-subst">{result.errorInfo.description}</span>"</span>)
+                    results[task_id] = {<span class="hljs-string">'error'</span>: result.errorInfo.description}
+                <span class="hljs-keyword">else</span>:
+                    results[task_id] = {<span class="hljs-string">'candidates'</span>: result.candidates}
+                    <span class="hljs-keyword">if</span> result.candidates:
+                        logger.info(<span class="hljs-string">f"Task <span class="hljs-subst">{task_id}</span> completed - <span class="hljs-subst">{len(result.candidates)}</span> candidates"</span>)
+                
+            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                logger.error(<span class="hljs-string">f"Error collecting results: <span class="hljs-subst">{e}</span>"</span>)
+                <span class="hljs-keyword">break</span>
+        
+        <span class="hljs-comment"># Handle failed launches</span>
+        <span class="hljs-keyword">for</span> task_id, task <span class="hljs-keyword">in</span> failed_launches:
+            results[task_id] = {<span class="hljs-string">'error'</span>: <span class="hljs-string">'Failed to launch'</span>}
+        
+        <span class="hljs-keyword">return</span> results
+        
+    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+        logger.error(<span class="hljs-string">f"Processor pool operation failed: <span class="hljs-subst">{e}</span>"</span>)
+        <span class="hljs-keyword">raise</span> SimpleLPRProcessingError(<span class="hljs-string">f"Pool operation error: <span class="hljs-subst">{e}</span>"</span>)
+
+<span class="hljs-comment"># Usage examples with error handling</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">example_safe_processing</span><span class="hljs-params">()</span>:</span>
+    <span class="hljs-string">"""Example of safe SimpleLPR processing"""</span>
+    
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-comment"># Initialize with error handling</span>
+        engine, country = safe_engine_creation(<span class="hljs-string">"license.xml"</span>, <span class="hljs-string">"Germany"</span>)
+        processor = engine.createProcessor()
+        processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+        
+        <span class="hljs-comment"># Safe image analysis</span>
+        <span class="hljs-keyword">try</span>:
+            candidates = safe_image_analysis(processor, <span class="hljs-string">"test_image.jpg"</span>, <span class="hljs-string">"file"</span>)
+            print(<span class="hljs-string">f"Found <span class="hljs-subst">{len(candidates)}</span> candidates"</span>)
+        <span class="hljs-keyword">except</span> SimpleLPRProcessingError <span class="hljs-keyword">as</span> e:
+            print(<span class="hljs-string">f"Image analysis failed: <span class="hljs-subst">{e}</span>"</span>)
+        
+        <span class="hljs-comment"># Safe video processing</span>
+        <span class="hljs-keyword">try</span>:
+            results = robust_video_processing(<span class="hljs-string">"test_video.mp4"</span>, country)
+            print(<span class="hljs-string">f"Video processing completed with <span class="hljs-subst">{len(results)}</span> detections"</span>)
+        <span class="hljs-keyword">except</span> SimpleLPRError <span class="hljs-keyword">as</span> e:
+            print(<span class="hljs-string">f"Video processing failed: <span class="hljs-subst">{e}</span>"</span>)
+        
+    <span class="hljs-keyword">except</span> SimpleLPRLicenseError <span class="hljs-keyword">as</span> e:
+        print(<span class="hljs-string">f"License issue: <span class="hljs-subst">{e}</span>"</span>)
+        print(<span class="hljs-string">"Consider running in evaluation mode or checking license file"</span>)
+    <span class="hljs-keyword">except</span> SimpleLPRError <span class="hljs-keyword">as</span> e:
+        print(<span class="hljs-string">f"SimpleLPR error: <span class="hljs-subst">{e}</span>"</span>)
+    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+        print(<span class="hljs-string">f"Unexpected error: <span class="hljs-subst">{e}</span>"</span>)
+</div></code></pre>
+<hr>
+<h2 id="performance-optimization">Performance Optimization</h2>
+<h3 id="optimization-strategies">Optimization Strategies</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+<span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">import</span> psutil
+<span class="hljs-keyword">import</span> threading
+<span class="hljs-keyword">from</span> queue <span class="hljs-keyword">import</span> Queue
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">optimize_engine_setup</span><span class="hljs-params">()</span>:</span>
+    <span class="hljs-string">"""Optimized engine setup for performance"""</span>
+    
+    <span class="hljs-comment"># Get system info</span>
+    cpu_count = psutil.cpu_count()
+    memory_gb = psutil.virtual_memory().total / (<span class="hljs-number">1024</span>**<span class="hljs-number">3</span>)
+    
+    print(<span class="hljs-string">f"System: <span class="hljs-subst">{cpu_count}</span> CPUs, <span class="hljs-subst">{memory_gb:<span class="hljs-number">.1</span>f}</span>GB RAM"</span>)
+    
+    setup_params = simplelpr.EngineSetupParms()
+    
+    <span class="hljs-comment"># Optimize concurrent operations based on system</span>
+    <span class="hljs-keyword">if</span> memory_gb &gt;= <span class="hljs-number">16</span>:
+        <span class="hljs-comment"># High memory system</span>
+        setup_params.maxConcurrentImageProcessingOps = min(cpu_count, <span class="hljs-number">8</span>)
+    <span class="hljs-keyword">elif</span> memory_gb &gt;= <span class="hljs-number">8</span>:
+        <span class="hljs-comment"># Medium memory system  </span>
+        setup_params.maxConcurrentImageProcessingOps = min(cpu_count // <span class="hljs-number">2</span>, <span class="hljs-number">4</span>)
+    <span class="hljs-keyword">else</span>:
+        <span class="hljs-comment"># Low memory system</span>
+        setup_params.maxConcurrentImageProcessingOps = <span class="hljs-number">2</span>
+    
+    print(<span class="hljs-string">f"Configured for <span class="hljs-subst">{setup_params.maxConcurrentImageProcessingOps}</span> concurrent operations"</span>)
+    
+    <span class="hljs-keyword">return</span> setup_params
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">benchmark_processing_methods</span><span class="hljs-params">(image_path, country=<span class="hljs-string">"Spain"</span>, iterations=<span class="hljs-number">10</span>)</span>:</span>
+    <span class="hljs-string">"""Benchmark different processing approaches"""</span>
+    
+    <span class="hljs-comment"># Setup</span>
+    engine, _ = safe_engine_creation(country=country)
+    
+    results = {}
+    
+    <span class="hljs-comment"># Method 1: Single processor</span>
+    print(<span class="hljs-string">"Benchmarking single processor..."</span>)
+    processor = engine.createProcessor()
+    processor.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    start_time = time.time()
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(iterations):
+        candidates = processor.analyze(image_path)
+    single_time = time.time() - start_time
+    results[<span class="hljs-string">'single_processor'</span>] = single_time / iterations
+    
+    <span class="hljs-comment"># Method 2: Processor pool</span>
+    print(<span class="hljs-string">"Benchmarking processor pool..."</span>)
+    pool = engine.createProcessorPool(<span class="hljs-number">4</span>)
+    pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    start_time = time.time()
+    
+    <span class="hljs-comment"># Launch all analyses</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(iterations):
+        pool.launchAnalyze(<span class="hljs-number">0</span>, i, float(i), simplelpr.TIMEOUT_INFINITE, image_path)
+    
+    <span class="hljs-comment"># Collect results</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(iterations):
+        result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_INFINITE)
+    
+    pool_time = time.time() - start_time
+    results[<span class="hljs-string">'processor_pool'</span>] = pool_time / iterations
+    
+    <span class="hljs-comment"># Results</span>
+    print(<span class="hljs-string">f"\nBenchmark Results (<span class="hljs-subst">{iterations}</span> iterations):"</span>)
+    print(<span class="hljs-string">f"Single processor: <span class="hljs-subst">{results[<span class="hljs-string">'single_processor'</span>]:<span class="hljs-number">.3</span>f}</span>s per image"</span>)
+    print(<span class="hljs-string">f"Processor pool: <span class="hljs-subst">{results[<span class="hljs-string">'processor_pool'</span>]:<span class="hljs-number">.3</span>f}</span>s per image"</span>)
+    print(<span class="hljs-string">f"Speedup: <span class="hljs-subst">{results[<span class="hljs-string">'single_processor'</span>]/results[<span class="hljs-string">'processor_pool'</span>]:<span class="hljs-number">.1</span>f}</span>x"</span>)
+    
+    <span class="hljs-keyword">return</span> results
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">optimize_video_processing</span><span class="hljs-params">(video_path, country=<span class="hljs-string">"Spain"</span>)</span>:</span>
+    <span class="hljs-string">"""Optimized video processing pipeline"""</span>
+    
+    <span class="hljs-comment"># Setup optimized engine</span>
+    setup_params = optimize_engine_setup()
+    engine = simplelpr.SimpleLPR(setup_params)
+    
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(engine.numSupportedCountries):
+        engine.set_countryWeight(i, <span class="hljs-number">0.0</span>)
+    engine.set_countryWeight(country, <span class="hljs-number">1.0</span>)
+    engine.realizeCountryWeights()
+    
+    <span class="hljs-comment"># Create optimized processor pool</span>
+    num_processors = setup_params.maxConcurrentImageProcessingOps
+    pool = engine.createProcessorPool(num_processors)
+    
+    <span class="hljs-comment"># Optimize processor settings for speed</span>
+    pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    pool.cropToPlateRegionEnabled = <span class="hljs-literal">False</span>  <span class="hljs-comment"># Disable for speed</span>
+    <span class="hljs-comment"># Note: contrastSensitivityFactor left at default - only adjust if needed for specific image conditions</span>
+    
+    <span class="hljs-comment"># Open video with resolution limits for performance</span>
+    video_source = engine.openVideoSource(
+        video_path,
+        simplelpr.FrameFormat.FRAME_FORMAT_BGR24,
+        <span class="hljs-number">1920</span>, <span class="hljs-number">1080</span>  <span class="hljs-comment"># Limit resolution</span>
+    )
+    
+    print(<span class="hljs-string">f"Processing with <span class="hljs-subst">{num_processors}</span> processors"</span>)
+    
+    <span class="hljs-comment"># Processing pipeline</span>
+    frame_queue = Queue(maxsize=num_processors * <span class="hljs-number">2</span>)
+    result_queue = Queue()
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">frame_reader</span><span class="hljs-params">()</span>:</span>
+        <span class="hljs-string">"""Read frames in separate thread"""</span>
+        frame_count = <span class="hljs-number">0</span>
+        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+            frame = video_source.nextFrame()
+            <span class="hljs-keyword">if</span> frame <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">break</span>
+            frame_queue.put((frame_count, frame))
+            frame_count += <span class="hljs-number">1</span>
+        frame_queue.put(<span class="hljs-literal">None</span>)  <span class="hljs-comment"># End marker</span>
+    
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">result_collector</span><span class="hljs-params">()</span>:</span>
+        <span class="hljs-string">"""Collect results in separate thread"""</span>
+        results = []
+        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+            result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_INFINITE)
+            <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">break</span>
+            result_queue.put(result)
+        result_queue.put(<span class="hljs-literal">None</span>)  <span class="hljs-comment"># End marker</span>
+    
+    <span class="hljs-comment"># Start threads</span>
+    reader_thread = threading.Thread(target=frame_reader)
+    collector_thread = threading.Thread(target=result_collector)
+    
+    reader_thread.start()
+    collector_thread.start()
+    
+    <span class="hljs-comment"># Main processing loop</span>
+    active_requests = <span class="hljs-number">0</span>
+    processed_frames = <span class="hljs-number">0</span>
+    detections = []
+    
+    start_time = time.time()
+    
+    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:
+        <span class="hljs-comment"># Launch new analyses</span>
+        <span class="hljs-keyword">try</span>:
+            frame_data = frame_queue.get(timeout=<span class="hljs-number">1.0</span>)
+            <span class="hljs-keyword">if</span> frame_data <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">break</span>  <span class="hljs-comment"># End of frames</span>
+            
+            frame_count, frame = frame_data
+            
+            success = pool.launchAnalyze(
+                <span class="hljs-number">0</span>, frame_count, simplelpr.TIMEOUT_IMMEDIATE, frame
+            )
+            
+            <span class="hljs-keyword">if</span> success:
+                active_requests += <span class="hljs-number">1</span>
+        <span class="hljs-keyword">except</span>:
+            <span class="hljs-keyword">pass</span>  <span class="hljs-comment"># Timeout, continue</span>
+        
+        <span class="hljs-comment"># Process results</span>
+        <span class="hljs-keyword">try</span>:
+            result = result_queue.get(timeout=<span class="hljs-number">0.1</span>)
+            <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+                <span class="hljs-keyword">break</span>  <span class="hljs-comment"># End of results</span>
+            
+            active_requests -= <span class="hljs-number">1</span>
+            processed_frames += <span class="hljs-number">1</span>
+            
+            <span class="hljs-keyword">if</span> result.candidates:
+                <span class="hljs-keyword">for</span> candidate <span class="hljs-keyword">in</span> result.candidates:
+                    <span class="hljs-keyword">if</span> candidate.matches:
+                        match = candidate.matches[<span class="hljs-number">0</span>]
+                        detections.append({
+                            <span class="hljs-string">'frame'</span>: result.requestId,
+                            <span class="hljs-string">'text'</span>: match.text,
+                            <span class="hljs-string">'confidence'</span>: match.confidence
+                        })
+        <span class="hljs-keyword">except</span>:
+            <span class="hljs-keyword">pass</span>  <span class="hljs-comment"># No result available</span>
+    
+    <span class="hljs-comment"># Wait for completion</span>
+    reader_thread.join()
+    
+    <span class="hljs-comment"># Process remaining results</span>
+    <span class="hljs-keyword">while</span> active_requests &gt; <span class="hljs-number">0</span>:
+        result = result_queue.get()
+        <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-keyword">break</span>
+        active_requests -= <span class="hljs-number">1</span>
+        processed_frames += <span class="hljs-number">1</span>
+        <span class="hljs-comment"># Process result...</span>
+    
+    collector_thread.join()
+    
+    elapsed = time.time() - start_time
+    fps = processed_frames / elapsed
+    
+    print(<span class="hljs-string">f"Optimized processing complete:"</span>)
+    print(<span class="hljs-string">f"  Frames: <span class="hljs-subst">{processed_frames}</span>"</span>)
+    print(<span class="hljs-string">f"  Time: <span class="hljs-subst">{elapsed:<span class="hljs-number">.1</span>f}</span>s"</span>)
+    print(<span class="hljs-string">f"  FPS: <span class="hljs-subst">{fps:<span class="hljs-number">.1</span>f}</span>"</span>)
+    print(<span class="hljs-string">f"  Detections: <span class="hljs-subst">{len(detections)}</span>"</span>)
+    
+    <span class="hljs-keyword">return</span> detections
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">memory_efficient_batch_processing</span><span class="hljs-params">(image_paths, country=<span class="hljs-string">"Spain"</span>, batch_size=<span class="hljs-number">10</span>)</span>:</span>
+    <span class="hljs-string">"""Memory-efficient batch processing for large image sets"""</span>
+    
+    engine, _ = safe_engine_creation(country=country)
+    pool = engine.createProcessorPool(<span class="hljs-number">4</span>)
+    pool.plateRegionDetectionEnabled = <span class="hljs-literal">True</span>
+    
+    total_images = len(image_paths)
+    all_results = {}
+    
+    print(<span class="hljs-string">f"Processing <span class="hljs-subst">{total_images}</span> images in batches of <span class="hljs-subst">{batch_size}</span>"</span>)
+    
+    <span class="hljs-keyword">for</span> batch_start <span class="hljs-keyword">in</span> range(<span class="hljs-number">0</span>, total_images, batch_size):
+        batch_end = min(batch_start + batch_size, total_images)
+        batch_paths = image_paths[batch_start:batch_end]
+        
+        print(<span class="hljs-string">f"Processing batch <span class="hljs-subst">{batch_start//batch_size + <span class="hljs-number">1</span>}</span>: "</span>
+              <span class="hljs-string">f"images <span class="hljs-subst">{batch_start+<span class="hljs-number">1</span>}</span>-<span class="hljs-subst">{batch_end}</span>"</span>)
+        
+        <span class="hljs-comment"># Process batch</span>
+        launched = <span class="hljs-number">0</span>
+        <span class="hljs-keyword">for</span> i, image_path <span class="hljs-keyword">in</span> enumerate(batch_paths):
+            global_id = batch_start + i
+            success = pool.launchAnalyze(
+                <span class="hljs-number">0</span>, global_id, float(global_id), 
+                simplelpr.TIMEOUT_INFINITE, str(image_path)
+            )
+            <span class="hljs-keyword">if</span> success:
+                launched += <span class="hljs-number">1</span>
+        
+        <span class="hljs-comment"># Collect batch results</span>
+        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> range(launched):
+            result = pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_INFINITE)
+            <span class="hljs-keyword">if</span> result:
+                image_path = image_paths[result.requestId]
+                all_results[str(image_path)] = result.candidates
+        
+        <span class="hljs-comment"># Memory cleanup hint</span>
+        <span class="hljs-keyword">import</span> gc
+        gc.collect()
+    
+    <span class="hljs-keyword">return</span> all_results
+
+<span class="hljs-comment"># Performance testing utilities</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">performance_test_suite</span><span class="hljs-params">()</span>:</span>
+    <span class="hljs-string">"""Run comprehensive performance tests"""</span>
+    
+    print(<span class="hljs-string">"SimpleLPR Performance Test Suite"</span>)
+    print(<span class="hljs-string">"="</span> * <span class="hljs-number">40</span>)
+    
+    <span class="hljs-comment"># System info</span>
+    print(<span class="hljs-string">f"CPU cores: <span class="hljs-subst">{psutil.cpu_count()}</span>"</span>)
+    print(<span class="hljs-string">f"Memory: <span class="hljs-subst">{psutil.virtual_memory().total / (<span class="hljs-number">1024</span>**<span class="hljs-number">3</span>):<span class="hljs-number">.1</span>f}</span>GB"</span>)
+    print(<span class="hljs-string">f"Available memory: <span class="hljs-subst">{psutil.virtual_memory().available / (<span class="hljs-number">1024</span>**<span class="hljs-number">3</span>):<span class="hljs-number">.1</span>f}</span>GB"</span>)
+    
+    <span class="hljs-comment"># Test different configurations</span>
+    test_image = <span class="hljs-string">"test_image.jpg"</span>  <span class="hljs-comment"># Replace with actual test image</span>
+    
+    <span class="hljs-keyword">if</span> os.path.exists(test_image):
+        <span class="hljs-comment"># Benchmark processing methods</span>
+        benchmark_results = benchmark_processing_methods(test_image, <span class="hljs-string">"Spain"</span>, <span class="hljs-number">5</span>)
+        
+        <span class="hljs-comment"># Test different processor counts</span>
+        engine, _ = safe_engine_creation(country=<span class="hljs-string">"Spain"</span>)
+        
+        print(<span class="hljs-string">"\nProcessor count optimization:"</span>)
+        <span class="hljs-keyword">for</span> proc_count <span class="hljs-keyword">in</span> [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">4</span>, <span class="hljs-number">8</span>]:
+            <span class="hljs-keyword">try</span>:
+                pool = engine.createProcessorPool(proc_count)
+                
+                start_time = time.time()
+                <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">10</span>):
+                    pool.launchAnalyze(<span class="hljs-number">0</span>, i, float(i), simplelpr.TIMEOUT_INFINITE, test_image)
+                
+                <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">10</span>):
+                    pool.pollNextResult(<span class="hljs-number">0</span>, simplelpr.TIMEOUT_INFINITE)
+                
+                elapsed = time.time() - start_time
+                print(<span class="hljs-string">f"  <span class="hljs-subst">{proc_count}</span> processors: <span class="hljs-subst">{elapsed:<span class="hljs-number">.2</span>f}</span>s (<span class="hljs-subst">{<span class="hljs-number">10</span>/elapsed:<span class="hljs-number">.1</span>f}</span> images/sec)"</span>)
+                
+            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+                print(<span class="hljs-string">f"  <span class="hljs-subst">{proc_count}</span> processors: Failed - <span class="hljs-subst">{e}</span>"</span>)
+    
+    <span class="hljs-keyword">else</span>:
+        print(<span class="hljs-string">f"Test image <span class="hljs-subst">{test_image}</span> not found - skipping benchmarks"</span>)
+</div></code></pre>
+
+</body>
+</html>

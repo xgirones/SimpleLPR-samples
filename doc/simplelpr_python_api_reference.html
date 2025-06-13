@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>simplelpr_python_api_reference.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="simplelpr-python-api-reference-guide">SimpleLPR Python API Reference Guide</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#installation-and-setup">Installation and Setup</a></li>
+<li><a href="#core-classes">Core Classes</a>
+<ul>
+<li><a href="#simplelpr-engine">SimpleLPR (Engine)</a></li>
+<li><a href="#processor">Processor</a></li>
+<li><a href="#processorpool">ProcessorPool</a></li>
+</ul>
+</li>
+<li><a href="#video-processing">Video Processing</a>
+<ul>
+<li><a href="#videosource">VideoSource</a></li>
+<li><a href="#videoframe">VideoFrame</a></li>
+</ul>
+</li>
+<li><a href="#plate-tracking">Plate Tracking</a>
+<ul>
+<li><a href="#platecandidatetracker">PlateCandidateTracker</a></li>
+<li><a href="#trackedplatecandidate">TrackedPlateCandidate</a></li>
+<li><a href="#platecandidatetrackerresult">PlateCandidateTrackerResult</a></li>
+</ul>
+</li>
+<li><a href="#data-structures">Data Structures</a>
+<ul>
+<li><a href="#candidate">Candidate</a></li>
+<li><a href="#match-countrymatch">Match (CountryMatch)</a></li>
+<li><a href="#element">Element</a></li>
+</ul>
+</li>
+<li><a href="#configuration-classes">Configuration Classes</a>
+<ul>
+<li><a href="#enginesetupparms">EngineSetupParms</a></li>
+<li><a href="#platecandidatetrackersetupparms">PlateCandidateTrackerSetupParms</a></li>
+</ul>
+</li>
+<li><a href="#utility-classes">Utility Classes</a>
+<ul>
+<li><a href="#point">Point</a></li>
+<li><a href="#rectangle">Rectangle</a></li>
+<li><a href="#versionnumber">VersionNumber</a></li>
+<li><a href="#errorinfo">ErrorInfo</a></li>
+</ul>
+</li>
+<li><a href="#enumerations">Enumerations</a>
+<ul>
+<li><a href="#frameformat">FrameFormat</a></li>
+<li><a href="#videosourcestate">VideoSourceState</a></li>
+</ul>
+</li>
+<li><a href="#constants">Constants</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#threading-considerations">Threading Considerations</a></li>
+</ol>
+<hr>
+<h2 id="overview">Overview</h2>
+<p>SimpleLPR is an Automatic Number Plate Recognition (ANPR) library that provides powerful license plate detection and recognition capabilities. The Python wrapper <code>pySimpleLPR3</code> exposes the full functionality of the native SimpleLPR library through a clean, Pythonic interface.</p>
+<h3 id="key-features">Key Features</h3>
+<ul>
+<li>Real-time license plate detection and recognition</li>
+<li>Support for multiple countries and plate formats</li>
+<li>Video stream processing (files, RTSP streams, cameras)</li>
+<li>Multi-threaded processing with processor pools</li>
+<li>Plate tracking across video frames</li>
+<li>Confidence scoring and character-level analysis</li>
+</ul>
+<hr>
+<h2 id="installation-and-setup">Installation and Setup</h2>
+<p>SimpleLPR can be easily installed from PyPI:</p>
+<pre class="hljs"><code><div>pip install simplelpr
+</div></code></pre>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>64-bit Python 3.8, 3.9, 3.10, 3.11, or 3.12</li>
+<li>Windows (x64) or Linux (x64)</li>
+<li>Valid license key for production use (60-day evaluation period available)</li>
+</ul>
+<h3 id="basic-usage">Basic Usage</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> simplelpr
+
+<span class="hljs-comment"># Basic engine setup</span>
+setup_params = simplelpr.EngineSetupParms()
+engine = simplelpr.SimpleLPR(setup_params)
+
+<span class="hljs-comment"># Set license key</span>
+engine.set_productKey(<span class="hljs-string">"path/to/license.xml"</span>)
+<span class="hljs-comment"># or from bytes</span>
+<span class="hljs-comment"># with open("license.xml", "rb") as f:</span>
+<span class="hljs-comment">#     engine.set_productKey(f.read())</span>
+</div></code></pre>
+<p><strong>Note</strong>: The PyPI version (<code>pip install simplelpr</code>) does not include CUDA GPU acceleration support. For CUDA support, use the SDK version with the <code>pySimpleLPR3</code> module.</p>
+<hr>
+<h2 id="core-classes">Core Classes</h2>
+<h3 id="simplelpr-engine">SimpleLPR (Engine)</h3>
+<p>The main engine class that serves as the entry point for all SimpleLPR functionality.</p>
+<h4 id="constructor">Constructor</h4>
+<pre class="hljs"><code><div>SimpleLPR(parms: EngineSetupParms)
+SimpleLPR(parms: EngineSetupParms, nativeFolderPath: str)
+</div></code></pre>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>parms</code>: Engine setup parameters</li>
+<li><code>nativeFolderPath</code>: Optional path to native library folder</li>
+</ul>
+<h4 id="properties">Properties</h4>
+<h5 id="versionnumber-versionnumber-read-only"><code>versionNumber: VersionNumber</code> (read-only)</h5>
+<p>Returns the version number of the SimpleLPR library.</p>
+<h5 id="numsupportedcountries-int-read-only"><code>numSupportedCountries: int</code> (read-only)</h5>
+<p>Returns the number of supported countries for license plate recognition.</p>
+<h4 id="methods">Methods</h4>
+<h5 id="setproductkeyproductkeypath-str---none"><code>set_productKey(productKeyPath: str) -&gt; None</code></h5>
+<h5 id="setproductkeyproductkey-bytes---none"><code>set_productKey(productKey: bytes) -&gt; None</code></h5>
+<p>Sets the product key from a file path or byte array.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>productKeyPath</code>: Path to the license file</li>
+<li><code>productKey</code>: License data as bytes</li>
+</ul>
+<h5 id="getcountrycodeid-int---str"><code>get_countryCode(id: int) -&gt; str</code></h5>
+<p>Returns the string identifier for a country by its index.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>id</code>: Country index (0 to numSupportedCountries-1)</li>
+</ul>
+<p><strong>Returns:</strong> Country string identifier (e.g., &quot;Spain&quot;, &quot;Germany&quot;)</p>
+<h5 id="getcountryweightid-int---float"><code>get_countryWeight(id: int) -&gt; float</code></h5>
+<h5 id="getcountryweightid-str---float"><code>get_countryWeight(id: str) -&gt; float</code></h5>
+<p>Gets the relative weight of a country used for breaking ties when a candidate matches multiple countries.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>id</code>: Country index or string identifier</li>
+</ul>
+<p><strong>Returns:</strong> Country weight (0.0 to disable, higher values for preference)</p>
+<h5 id="setcountryweightid-int-weight-float---none"><code>set_countryWeight(id: int, weight: float) -&gt; None</code></h5>
+<h5 id="setcountryweightid-str-weight-float---none"><code>set_countryWeight(id: str, weight: float) -&gt; None</code></h5>
+<p>Sets the relative weight of a country.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>id</code>: Country index or string identifier</li>
+<li><code>weight</code>: Country weight (≥ 0.0, use 0.0 to disable)</li>
+</ul>
+<h5 id="realizecountryweights---none"><code>realizeCountryWeights() -&gt; None</code></h5>
+<p>Builds internal country verification lookup tables. Call after configuring country weights.</p>
+<p><strong>Note:</strong> This method can be time-consuming depending on countries selected.</p>
+<h5 id="openvideosourceuri-str-format-frameformat-maxwidthcap-int---1-maxheightcap-int---1---videosource"><code>openVideoSource(uri: str, format: FrameFormat, maxWidthCap: int = -1, maxHeightCap: int = -1) -&gt; VideoSource</code></h5>
+<p>Opens a video source from URI with optional frame rescaling.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>uri</code>: Video source location (file path, RTSP URL, etc.)</li>
+<li><code>format</code>: Desired color format for frames</li>
+<li><code>maxWidthCap</code>: Maximum frame width (-1 for no limit)</li>
+<li><code>maxHeightCap</code>: Maximum frame height (-1 for no limit)</li>
+</ul>
+<p><strong>Returns:</strong> VideoSource object for frame access</p>
+<h5 id="createprocessor---processor"><code>createProcessor() -&gt; Processor</code></h5>
+<p>Creates a new processor for license plate recognition.</p>
+<p><strong>Returns:</strong> Processor instance</p>
+<p><strong>Note:</strong> Each thread should use its own processor instance.</p>
+<h5 id="createprocessorpoolcprocessors-int--0---processorpool"><code>createProcessorPool(cProcessors: int = 0) -&gt; ProcessorPool</code></h5>
+<p>Creates a processor pool for concurrent processing.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>cProcessors</code>: Number of processors (0 = auto-detect based on CPU cores)</li>
+</ul>
+<p><strong>Returns:</strong> ProcessorPool instance</p>
+<h5 id="createplatecandidatetrackerparms-platecandidatetrackersetupparms---platecandidatetracker"><code>createPlateCandidateTracker(parms: PlateCandidateTrackerSetupParms) -&gt; PlateCandidateTracker</code></h5>
+<p>Creates a plate candidate tracker for video processing.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>parms</code>: Tracker configuration parameters</li>
+</ul>
+<p><strong>Returns:</strong> PlateCandidateTracker instance</p>
+<hr>
+<h3 id="processor">Processor</h3>
+<p>Provides license plate recognition functionality for single-threaded processing.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="numsupportedcountries-int-read-only"><code>numSupportedCountries: int</code> (read-only)</h5>
+<p>Number of supported countries.</p>
+<h5 id="contrastsensitivityfactor-float-readwrite"><code>contrastSensitivityFactor: float</code> (read/write)</h5>
+<p>Contrast sensitivity factor (0.0-1.0). Lower values help with shadows, higher values for normal conditions.</p>
+<h5 id="plateregiondetectionenabled-bool-readwrite"><code>plateRegionDetectionEnabled: bool</code> (read/write)</h5>
+<p>Enables/disables plate region detection and extraction.</p>
+<h5 id="croptoplateregionenabled-bool-readwrite"><code>cropToPlateRegionEnabled: bool</code> (read/write)</h5>
+<p>Enables/disables cropping results to detected plate region.</p>
+<h4 id="methods">Methods</h4>
+<h5 id="analyzeimgpath-str---listcandidate"><code>analyze(imgPath: str) -&gt; List[Candidate]</code></h5>
+<p>Analyzes an image file for license plates.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>imgPath</code>: Path to image file (.jpg, .png, .tif)</li>
+</ul>
+<p><strong>Returns:</strong> List of detected license plate candidates</p>
+<h5 id="analyzeimgbuf-buffer---listcandidate"><code>analyze(imgBuf: buffer) -&gt; List[Candidate]</code></h5>
+<p>Analyzes an image from memory buffer.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>imgBuf</code>: Image data supporting Python buffer protocol (numpy array, bytes, etc.)</li>
+</ul>
+<p><strong>Returns:</strong> List of detected license plate candidates</p>
+<h5 id="country-management-methods">Country Management Methods</h5>
+<p>Same as SimpleLPR engine:</p>
+<ul>
+<li><code>get_countryCode(id: int) -&gt; str</code></li>
+<li><code>get_countryWeight(id: int) -&gt; float</code></li>
+<li><code>set_countryWeight(id: int, weight: float) -&gt; None</code></li>
+<li><code>realizeCountryWeights() -&gt; None</code></li>
+</ul>
+<hr>
+<h3 id="processorpool">ProcessorPool</h3>
+<p>Provides multi-threaded license plate recognition using a pool of processors.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="numsupportedcountries-int-read-only"><code>numSupportedCountries: int</code> (read-only)</h5>
+<p>Number of supported countries.</p>
+<h5 id="contrastsensitivityfactor-float-readwrite"><code>contrastSensitivityFactor: float</code> (read/write)</h5>
+<p>Contrast sensitivity factor for all processors in the pool.</p>
+<h5 id="plateregiondetectionenabled-bool-readwrite"><code>plateRegionDetectionEnabled: bool</code> (read/write)</h5>
+<p>Enables/disables plate region detection for all processors.</p>
+<h5 id="croptoplateregionenabled-bool-readwrite"><code>cropToPlateRegionEnabled: bool</code> (read/write)</h5>
+<p>Enables/disables crop to plate region for all processors.</p>
+<h4 id="methods">Methods</h4>
+<h5 id="launchanalyzestreamid-int-requestid-int-timestampinsec-float-timeoutinms-int-imgpath-str---bool"><code>launchAnalyze(streamId: int, requestId: int, timestampInSec: float, timeoutInMs: int, imgPath: str) -&gt; bool</code></h5>
+<p>Launches asynchronous analysis of an image file.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>streamId</code>: Stream identifier for grouping related requests</li>
+<li><code>requestId</code>: Unique request identifier</li>
+<li><code>timestampInSec</code>: Image timestamp in seconds</li>
+<li><code>timeoutInMs</code>: Timeout for getting an available processor</li>
+<li><code>imgPath</code>: Path to image file</li>
+</ul>
+<p><strong>Returns:</strong> True if analysis launched successfully</p>
+<h5 id="launchanalyzestreamid-int-requestid-int-timeoutinms-int-frame-videoframe---bool"><code>launchAnalyze(streamId: int, requestId: int, timeoutInMs: int, frame: VideoFrame) -&gt; bool</code></h5>
+<h5 id="launchanalyzestreamid-int-requestid-int-timeoutinms-int-frame-videoframe-roi-rectangle---bool"><code>launchAnalyze(streamId: int, requestId: int, timeoutInMs: int, frame: VideoFrame, roi: Rectangle) -&gt; bool</code></h5>
+<p>Launches asynchronous analysis of a video frame.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>streamId</code>: Stream identifier</li>
+<li><code>requestId</code>: Unique request identifier</li>
+<li><code>timeoutInMs</code>: Timeout for getting processor</li>
+<li><code>frame</code>: VideoFrame to analyze</li>
+<li><code>roi</code>: Optional region of interest</li>
+</ul>
+<p><strong>Returns:</strong> True if analysis launched successfully</p>
+<h5 id="launchanalyzestreamid-int-requestid-int-timestampinsec-float-timeoutinms-int-imgbuf-buffer---bool"><code>launchAnalyze(streamId: int, requestId: int, timestampInSec: float, timeoutInMs: int, imgBuf: buffer) -&gt; bool</code></h5>
+<p>Launches asynchronous analysis of image from buffer.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>streamId</code>: Stream identifier</li>
+<li><code>requestId</code>: Unique request identifier</li>
+<li><code>timestampInSec</code>: Image timestamp</li>
+<li><code>timeoutInMs</code>: Timeout for getting processor</li>
+<li><code>imgBuf</code>: Image buffer</li>
+</ul>
+<p><strong>Returns:</strong> True if analysis launched successfully</p>
+<h5 id="pollnextresultstreamid-int-timeoutinms-int---processorpoolresult--none"><code>pollNextResult(streamId: int, timeoutInMs: int) -&gt; ProcessorPoolResult | None</code></h5>
+<p>Retrieves the next available analysis result.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>streamId</code>: Stream ID to get results for (STREAM_ID_ANY for any stream)</li>
+<li><code>timeoutInMs</code>: Timeout for waiting for result</li>
+</ul>
+<p><strong>Returns:</strong> ProcessorPoolResult or None if timeout</p>
+<h5 id="ongoingrequestcountgetstreamid-int---int"><code>ongoingRequestCount_get(streamId: int) -&gt; int</code></h5>
+<p>Gets the number of ongoing analysis requests.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>streamId</code>: Stream ID to count (STREAM_ID_ANY for all streams)</li>
+</ul>
+<p><strong>Returns:</strong> Number of ongoing requests</p>
+<h5 id="country-management-methods">Country Management Methods</h5>
+<p>Same as SimpleLPR engine and Processor.</p>
+<hr>
+<h2 id="video-processing">Video Processing</h2>
+<h3 id="videosource">VideoSource</h3>
+<p>Provides access to video frames from various sources (files, streams, cameras).</p>
+<h4 id="properties">Properties</h4>
+<h5 id="islivesource-bool-read-only"><code>isLiveSource: bool</code> (read-only)</h5>
+<p>Indicates if the source is a live stream (True) or file (False).</p>
+<h5 id="state-videosourcestate-read-only"><code>state: VideoSourceState</code> (read-only)</h5>
+<p>Current state of the video source.</p>
+<h4 id="methods">Methods</h4>
+<h5 id="nextframe---videoframe--none"><code>nextFrame() -&gt; VideoFrame | None</code></h5>
+<p>Retrieves the next video frame.</p>
+<p><strong>Returns:</strong> VideoFrame object or None if no frame available</p>
+<h5 id="reconnect---none"><code>reconnect() -&gt; None</code></h5>
+<p>Attempts to reconnect live sources in error states. No effect on file sources.</p>
+<hr>
+<h3 id="videoframe">VideoFrame</h3>
+<p>Represents a single video frame with metadata and pixel data.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="sequencenumber-int-read-only"><code>sequenceNumber: int</code> (read-only)</h5>
+<p>Unique sequential number of the frame within the video stream.</p>
+<h5 id="timestamp-float-read-only"><code>timestamp: float</code> (read-only)</h5>
+<p>Frame timestamp in seconds since video start.</p>
+<h5 id="format-frameformat-read-only"><code>format: FrameFormat</code> (read-only)</h5>
+<p>Color format of the video frame.</p>
+<h5 id="width-int-read-only"><code>width: int</code> (read-only)</h5>
+<p>Frame width in pixels.</p>
+<h5 id="height-int-read-only"><code>height: int</code> (read-only)</h5>
+<p>Frame height in pixels.</p>
+<h5 id="widthstep-int-read-only"><code>widthStep: int</code> (read-only)</h5>
+<p>Number of bytes between consecutive row starts.</p>
+<h5 id="data-capsule-read-only"><code>data: capsule</code> (read-only)</h5>
+<p>Pointer to raw pixel data.</p>
+<h4 id="methods">Methods</h4>
+<h5 id="saveasjpegimgpath-str-quality-int---1---none"><code>saveAsJPEG(imgPath: str, quality: int = -1) -&gt; None</code></h5>
+<p>Saves the frame as a JPEG file.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>imgPath</code>: Output file path</li>
+<li><code>quality</code>: JPEG quality (-1 for default, 0-100)</li>
+</ul>
+<h4 id="buffer-protocol-support">Buffer Protocol Support</h4>
+<p>VideoFrame supports Python's buffer protocol, allowing direct access to pixel data:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+frame_array = np.array(video_frame, copy=<span class="hljs-literal">False</span>)
+</div></code></pre>
+<hr>
+<h2 id="plate-tracking">Plate Tracking</h2>
+<h3 id="platecandidatetracker">PlateCandidateTracker</h3>
+<p>Tracks license plate candidates across multiple video frames, providing temporal correlation resistant to OCR errors.</p>
+<h4 id="methods">Methods</h4>
+<h5 id="processframecandidatesframeid-int-timestampinsec-float-processorpoolresult-processorpoolresult---platecandidatetrackerresult"><code>processFrameCandidates(frameId: int, timestampInSec: float, processorPoolResult: ProcessorPoolResult) -&gt; PlateCandidateTrackerResult</code></h5>
+<p>Processes candidates from a frame without image data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>frameId</code>: Unique frame identifier</li>
+<li><code>timestampInSec</code>: Frame timestamp</li>
+<li><code>processorPoolResult</code>: Result from ProcessorPool.pollNextResult()</li>
+</ul>
+<p><strong>Returns:</strong> Tracking results with new and closed tracks</p>
+<h5 id="processframecandidatesprocessorpoolresult-processorpoolresult-frame-videoframe---platecandidatetrackerresult"><code>processFrameCandidates(processorPoolResult: ProcessorPoolResult, frame: VideoFrame) -&gt; PlateCandidateTrackerResult</code></h5>
+<p>Processes candidates with video frame for thumbnail extraction.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>processorPoolResult</code>: Result from ProcessorPool.pollNextResult()</li>
+<li><code>frame</code>: Video frame for thumbnail extraction</li>
+</ul>
+<p><strong>Returns:</strong> Tracking results with new and closed tracks</p>
+<h5 id="processframecandidatesframeid-int-timestampinsec-float-processorpoolresult-processorpoolresult-format-frameformat-imgbuf-buffer---platecandidatetrackerresult"><code>processFrameCandidates(frameId: int, timestampInSec: float, processorPoolResult: ProcessorPoolResult, format: FrameFormat, imgBuf: buffer) -&gt; PlateCandidateTrackerResult</code></h5>
+<p>Processes candidates with raw image data for thumbnail extraction.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>frameId</code>: Unique frame identifier</li>
+<li><code>timestampInSec</code>: Frame timestamp</li>
+<li><code>processorPoolResult</code>: Result from ProcessorPool.pollNextResult()</li>
+<li><code>format</code>: Image format specification</li>
+<li><code>imgBuf</code>: Raw image data buffer</li>
+</ul>
+<p><strong>Returns:</strong> Tracking results with new and closed tracks</p>
+<h5 id="flush---platecandidatetrackerresult"><code>flush() -&gt; PlateCandidateTrackerResult</code></h5>
+<p>Forces tracker to close all active tracks.</p>
+<p><strong>Returns:</strong> Results containing all closed tracks</p>
+<hr>
+<h3 id="trackedplatecandidate">TrackedPlateCandidate</h3>
+<p>Represents a license plate tracked across multiple video frames.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="firstdetectionframeid-int"><code>firstDetectionFrameId: int</code></h5>
+<p>Frame ID of the first detection.</p>
+<h5 id="firstdetectiontimestamp-float"><code>firstDetectionTimestamp: float</code></h5>
+<p>Timestamp of the first detection in seconds.</p>
+<h5 id="newestdetectionframeid-int"><code>newestDetectionFrameId: int</code></h5>
+<p>Frame ID of the most recent detection.</p>
+<h5 id="newestdetectiontimestamp-float"><code>newestDetectionTimestamp: float</code></h5>
+<p>Timestamp of the most recent detection in seconds.</p>
+<h5 id="representativeframeid-int"><code>representativeFrameId: int</code></h5>
+<p>Frame ID of the representative detection.</p>
+<h5 id="representativetimestamp-float"><code>representativeTimestamp: float</code></h5>
+<p>Timestamp of the representative frame in seconds.</p>
+<h5 id="representativecandidate-candidate"><code>representativeCandidate: Candidate</code></h5>
+<p>Best license plate candidate from this track.</p>
+<h5 id="representativethumbnail-videoframe--none"><code>representativeThumbnail: VideoFrame | None</code></h5>
+<p>Thumbnail image of the plate from representative frame.</p>
+<hr>
+<h3 id="platecandidatetrackerresult">PlateCandidateTrackerResult</h3>
+<p>Contains the results of plate tracking operations.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="newtracks-listtrackedplatecandidate"><code>newTracks: List[TrackedPlateCandidate]</code></h5>
+<p>Collection of new tracks that met trigger criteria.</p>
+<h5 id="closedtracks-listtrackedplatecandidate"><code>closedTracks: List[TrackedPlateCandidate]</code></h5>
+<p>Collection of tracks closed due to inactivity or other criteria.</p>
+<hr>
+<h2 id="data-structures">Data Structures</h2>
+<h3 id="candidate">Candidate</h3>
+<p>Represents a detected license plate candidate.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="darkonlight-bool"><code>darkOnLight: bool</code></h5>
+<p>True if plate has dark text on light background.</p>
+<h5 id="platedetectionconfidence-float"><code>plateDetectionConfidence: float</code></h5>
+<p>Confidence that candidate is a license plate vs. scene text (-1 if detection disabled).</p>
+<h5 id="boundingbox-rectangle"><code>boundingBox: Rectangle</code></h5>
+<p>Bounding box of the text in pixel coordinates.</p>
+<h5 id="plateregionvertices-listpoint"><code>plateRegionVertices: List[Point]</code></h5>
+<p>Four vertices of detected plate region (or -1 coordinates if not detected).</p>
+<h5 id="matches-listmatch"><code>matches: List[Match]</code></h5>
+<p>List of possible country matches. Last entry is raw text before country validation.</p>
+<hr>
+<h3 id="match-countrymatch">Match (CountryMatch)</h3>
+<p>Represents a possible country match for a license plate candidate.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="country-str"><code>country: str</code></h5>
+<p>Country code string.</p>
+<h5 id="countryiso-str"><code>countryISO: str</code></h5>
+<p>Country ISO Alpha-2 code.</p>
+<h5 id="text-str"><code>text: str</code></h5>
+<p>Unicode representation of the license plate string.</p>
+<h5 id="confidence-float"><code>confidence: float</code></h5>
+<p>Overall recognition confidence (product of element confidences).</p>
+<h5 id="boundingbox-rectangle"><code>boundingBox: Rectangle</code></h5>
+<p>Bounding box of the text in pixel coordinates.</p>
+<h5 id="elements-listelement"><code>elements: List[Element]</code></h5>
+<p>Information about individual characters in reading order.</p>
+<hr>
+<h3 id="element">Element</h3>
+<p>Represents a candidate character in a license plate.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="glyph-str"><code>glyph: str</code></h5>
+<p>Unicode representation of the character.</p>
+<h5 id="confidence-float"><code>confidence: float</code></h5>
+<p>Recognition confidence (0-1 range, not a probability).</p>
+<h5 id="boundingbox-rectangle"><code>boundingBox: Rectangle</code></h5>
+<p>Bounding box of the character in pixel coordinates.</p>
+<hr>
+<h2 id="configuration-classes">Configuration Classes</h2>
+<h3 id="enginesetupparms">EngineSetupParms</h3>
+<p>Configuration parameters for SimpleLPR engine initialization.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="cudadeviceid-int"><code>cudaDeviceId: int</code></h5>
+<p>CUDA device identifier (-1 for CPU mode).</p>
+<p><strong>Note</strong>: CUDA support is only available in the SDK version, not the PyPI package.</p>
+<h5 id="enableimageprocessingwithgpu-bool"><code>enableImageProcessingWithGPU: bool</code></h5>
+<p>Enable GPU for image processing tasks.</p>
+<p><strong>Note</strong>: GPU features are only available in the SDK version, not the PyPI package.</p>
+<h5 id="enableclassificationwithgpu-bool"><code>enableClassificationWithGPU: bool</code></h5>
+<p>Enable GPU for candidate classification.</p>
+<p><strong>Note</strong>: GPU features are only available in the SDK version, not the PyPI package.</p>
+<h5 id="maxconcurrentimageprocessingops-int"><code>maxConcurrentImageProcessingOps: int</code></h5>
+<p>Maximum concurrent image processing operations (0 for automatic).</p>
+<p><strong>Recommended values:</strong></p>
+<ul>
+<li>CPU mode: 1-2 concurrent operations (PyPI version)</li>
+<li>GPU mode: 4+ concurrent operations (SDK version only)</li>
+</ul>
+<hr>
+<h3 id="platecandidatetrackersetupparms">PlateCandidateTrackerSetupParms</h3>
+<p>Configuration parameters for plate candidate tracking.</p>
+<h4 id="constructor">Constructor</h4>
+<pre class="hljs"><code><div>PlateCandidateTrackerSetupParms(
+    triggerWindowInSec: float = <span class="hljs-number">3.0</span>,
+    maxIdleTimeInSec: float = <span class="hljs-number">3.5</span>, 
+    minTriggerFrameCount: int = <span class="hljs-number">3</span>,
+    thumbnailWidth: int = <span class="hljs-number">256</span>,
+    thumbnailHeight: int = <span class="hljs-number">128</span>
+)
+</div></code></pre>
+<h4 id="properties">Properties</h4>
+<h5 id="triggerwindowinsec-float"><code>triggerWindowInSec: float</code></h5>
+<p>Time window for track triggering (default: 3.0 seconds).</p>
+<h5 id="maxidletimeinsec-float"><code>maxIdleTimeInSec: float</code></h5>
+<p>Maximum idle time before track closure (default: 3.5 seconds).</p>
+<h5 id="mintriggerframecount-int"><code>minTriggerFrameCount: int</code></h5>
+<p>Minimum detections needed to trigger track (default: 3).</p>
+<h5 id="thumbnailwidth-int"><code>thumbnailWidth: int</code></h5>
+<p>Target thumbnail width in pixels (default: 256, -1 for uncapped).</p>
+<h5 id="thumbnailheight-int"><code>thumbnailHeight: int</code></h5>
+<p>Target thumbnail height in pixels (default: 128, -1 for uncapped).</p>
+<hr>
+<h2 id="utility-classes">Utility Classes</h2>
+<h3 id="point">Point</h3>
+<p>Represents a 2D point with integer coordinates.</p>
+<h4 id="properties">Properties</h4>
+<ul>
+<li><code>x: int</code> - X coordinate</li>
+<li><code>y: int</code> - Y coordinate</li>
+</ul>
+<hr>
+<h3 id="rectangle">Rectangle</h3>
+<p>Represents a rectangle with integer coordinates.</p>
+<h4 id="properties">Properties</h4>
+<ul>
+<li><code>left: int</code> - Left edge X coordinate</li>
+<li><code>top: int</code> - Top edge Y coordinate</li>
+<li><code>width: int</code> - Rectangle width</li>
+<li><code>height: int</code> - Rectangle height</li>
+</ul>
+<hr>
+<h3 id="versionnumber">VersionNumber</h3>
+<p>Represents a version number with four components.</p>
+<h4 id="properties">Properties</h4>
+<ul>
+<li><code>A: int</code> - Generation number</li>
+<li><code>B: int</code> - Major version</li>
+<li><code>C: int</code> - Minor version</li>
+<li><code>D: int</code> - Patch version</li>
+</ul>
+<hr>
+<h3 id="errorinfo">ErrorInfo</h3>
+<p>Contains error information when operations fail.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="errorcode-int-read-only"><code>errorCode: int</code> (read-only)</h5>
+<p>HRESULT-style error code.</p>
+<h5 id="description-str-read-only"><code>description: str</code> (read-only)</h5>
+<p>Textual error description.</p>
+<hr>
+<h3 id="processorpoolresult">ProcessorPoolResult</h3>
+<p>Contains the result of an asynchronous processor pool operation.</p>
+<h4 id="properties">Properties</h4>
+<h5 id="streamid-int-read-only"><code>streamId: int</code> (read-only)</h5>
+<p>Stream identifier for the request.</p>
+<h5 id="requestid-int-read-only"><code>requestId: int</code> (read-only)</h5>
+<p>Unique request identifier.</p>
+<h5 id="timestamp-float-read-only"><code>timestamp: float</code> (read-only)</h5>
+<p>Timestamp of the analyzed image/frame.</p>
+<h5 id="errorinfo-errorinfo--none-read-only"><code>errorInfo: ErrorInfo | None</code> (read-only)</h5>
+<p>Error information if analysis failed.</p>
+<h5 id="candidates-listcandidate-read-only"><code>candidates: List[Candidate]</code> (read-only)</h5>
+<p>Detected license plate candidates if analysis succeeded.</p>
+<hr>
+<h2 id="enumerations">Enumerations</h2>
+<h3 id="frameformat">FrameFormat</h3>
+<p>Specifies video frame color formats.</p>
+<ul>
+<li><code>FRAME_FORMAT_GRAY8</code> - 8-bit grayscale</li>
+<li><code>FRAME_FORMAT_BGR24</code> - 24-bit Blue-Green-Red</li>
+</ul>
+<h3 id="videosourcestate">VideoSourceState</h3>
+<p>Represents video source states.</p>
+<ul>
+<li><code>VIDEO_SOURCE_STATE_INIT</code> - Initial state</li>
+<li><code>VIDEO_SOURCE_STATE_OPEN</code> - Successfully opened</li>
+<li><code>VIDEO_SOURCE_STATE_EOF</code> - End of file/stream reached</li>
+<li><code>VIDEO_SOURCE_STATE_IO_ERROR</code> - Input/output error</li>
+<li><code>VIDEO_SOURCE_STATE_ERROR</code> - General error</li>
+</ul>
+<hr>
+<h2 id="constants">Constants</h2>
+<h3 id="processor-pool-constants">Processor Pool Constants</h3>
+<ul>
+<li><code>TIMEOUT_INFINITE = -1</code> - Wait indefinitely</li>
+<li><code>TIMEOUT_IMMEDIATE = 0</code> - Return immediately (non-blocking)</li>
+<li><code>STREAM_ID_ANY = -1</code> - Match any stream ID</li>
+</ul>
+<hr>
+<h2 id="error-handling">Error Handling</h2>
+<p>SimpleLPR uses exceptions for error handling. Common scenarios:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">try</span>:
+    engine = pySimpleLPR3.SimpleLPR(setup_params)
+    engine.set_productKey(<span class="hljs-string">"license.xml"</span>)
+    processor = engine.createProcessor()
+    candidates = processor.analyze(<span class="hljs-string">"image.jpg"</span>)
+<span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+    print(<span class="hljs-string">f"SimpleLPR error: <span class="hljs-subst">{e}</span>"</span>)
+</div></code></pre>
+<p>For ProcessorPool operations, check the <code>errorInfo</code> property of results:</p>
+<pre class="hljs"><code><div>result = pool.pollNextResult(<span class="hljs-number">0</span>, pySimpleLPR3.TIMEOUT_INFINITE)
+<span class="hljs-keyword">if</span> result.errorInfo:
+    print(<span class="hljs-string">f"Analysis failed: <span class="hljs-subst">{result.errorInfo.description}</span>"</span>)
+<span class="hljs-keyword">else</span>:
+    print(<span class="hljs-string">f"Found <span class="hljs-subst">{len(result.candidates)}</span> plates"</span>)
+</div></code></pre>
+<hr>
+<h2 id="threading-considerations">Threading Considerations</h2>
+<h3 id="thread-safety">Thread Safety</h3>
+<ul>
+<li><strong>SimpleLPR engine</strong>: Thread-safe for most operations</li>
+<li><strong>Processor</strong>: Not thread-safe - each thread needs its own instance</li>
+<li><strong>ProcessorPool</strong>: Thread-safe, designed for concurrent use</li>
+<li><strong>VideoSource</strong>: Not thread-safe - use one per thread</li>
+<li><strong>PlateCandidateTracker</strong>: Not thread-safe - use one per thread</li>
+</ul>
+<h3 id="best-practices">Best Practices</h3>
+<ul>
+<li>Create one SimpleLPR engine per application</li>
+<li>Use ProcessorPool for multi-threaded scenarios</li>
+<li>Create separate Processor instances for each thread in single-threaded scenarios</li>
+<li>Configure country weights at the engine level when possible (more efficient than per-processor)</li>
+</ul>
+<h3 id="memory-management">Memory Management</h3>
+<p>All objects use automatic memory management through reference counting. No manual cleanup required in Python.</p>
+<hr>
+<h2 id="performance-tips">Performance Tips</h2>
+<ol>
+<li><strong>Country Selection</strong>: Disable unused countries with <code>set_countryWeight(country, 0.0)</code> to improve performance</li>
+<li><strong>Region of Interest</strong>: Use ROI in video processing to focus on relevant areas</li>
+<li><strong>Concurrent Processing</strong>: Use ProcessorPool for processing multiple images simultaneously</li>
+<li><strong>Image Preprocessing</strong>: Consider resizing very large images before analysis</li>
+<li><strong>Batch Processing</strong>: Process multiple images through ProcessorPool rather than sequential Processor calls</li>
+</ol>
+<p>This completes the SimpleLPR Python API Reference Guide. The next step would be creating a Quick Start Guide with tutorials and practical examples.</p>
+
+</body>
+</html>
