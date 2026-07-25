@@ -61,9 +61,21 @@ namespace VideoANPR.Observables
         /// </param>
         /// <returns>A transformed observable sequence of FrameResultLPR objects that can be subscribed to by an observer.</returns>
         /// <remarks>
-        /// IMPORTANT: This operator NEVER disposes frames. The video source may have multiple subscribers,
-        /// so frames must flow through all pipelines. Only the final consumer should dispose frames.
-        /// This operator only owns and disposes IProcessorPoolResult objects when they cannot be delivered downstream.
+        /// OWNERSHIP MODEL (read this before reusing the operator):
+        /// SimpleLPR frames wrap native memory, so SOMEBODY must dispose every frame exactly
+        /// once -- relying on garbage collection alone strands megabytes of native memory per
+        /// frame until finalizers eventually run. The convention used throughout this demo is
+        /// "single consumer owns the frame":
+        ///   - Frames successfully paired with an analysis result are handed downstream
+        ///     inside a FrameResultLPR; the FINAL subscriber disposes them (see the OnNext
+        ///     handler in MainWindowViewModel).
+        ///   - Frames that can never reach the subscriber -- declined launches, and frames
+        ///     still queued when the pipeline fails or shuts down -- are disposed HERE,
+        ///     because no one else will ever see them.
+        /// If you fan the same frame stream out to MULTIPLE processing pipelines, this
+        /// convention no longer works: neither pipeline can know when the other is finished
+        /// with a frame. In that case remove the disposals below and introduce reference
+        /// counting around each frame, or give each pipeline its own video source.
         /// </remarks>
         public static IObservable<FrameResultLPR> ToSimpleLPR(
              this IObservable<IVideoFrame> src,
@@ -92,7 +104,16 @@ namespace VideoANPR.Observables
 
                 void discardPendingResults()
                 {
-                    frameQ.Clear();
+                    // These frames were queued while waiting for their analysis results, but
+                    // the pipeline is shutting down: no result will ever be paired with them
+                    // and no subscriber will ever receive them. Under the single-consumer
+                    // ownership model (see the remarks above) they must be disposed here --
+                    // merely clearing the queue, as earlier versions did, stranded their
+                    // native buffers until the garbage collector's finalizers ran.
+                    while (frameQ.Count > 0)
+                    {
+                        frameQ.Dequeue().Dispose();
+                    }
 
                     while (pool.get_ongoingRequestCount(streamId) > 0)
                     {
@@ -115,10 +136,20 @@ namespace VideoANPR.Observables
                             {
                                 IVideoFrame frame = frameQ.Dequeue();
 
-                                if (result.errorInfo != null)
+                                // The 'errorInfo' property queries the native result on
+                                // EVERY access -- it is not cached. Fetch it into a local
+                                // BEFORE disposing the result: the previous code disposed
+                                // first and then read the property again in the throw
+                                // statement, which raised a NullReferenceException instead
+                                // of the real analysis error.
+                                Exception? analysisError = result.errorInfo;
+                                if (analysisError != null)
                                 {
+                                    // Neither the result nor the frame will reach the
+                                    // subscriber; dispose both before propagating the error.
                                     result.Dispose();
-                                    throw result.errorInfo;
+                                    frame.Dispose();
+                                    throw analysisError;
                                 }
 
                                 o.OnNext(new FrameResultLPR(frame, result));
@@ -149,6 +180,14 @@ namespace VideoANPR.Observables
                             if (pool.launchAnalyze(streamId, frame.sequenceNumber, launchTimeout, frame))
                             {
                                 frameQ.Enqueue(frame);
+                            }
+                            else
+                            {
+                                // Non-exhaustive mode only: no processor became available in
+                                // time, so this frame is skipped. It will never be paired
+                                // with a result nor delivered downstream, so it is disposed
+                                // here (single-consumer ownership; see the remarks above).
+                                frame.Dispose();
                             }
                         }
                         catch (Exception ex)

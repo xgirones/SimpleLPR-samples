@@ -50,23 +50,28 @@ namespace VideoANPR.ViewModels
         }
 
         // Constructor for the LicensePlateViewModel class.
-        public LicensePlateViewModel(ITrackedPlateCandidate track)
+        //
+        // The caller provides the thumbnail and RETAINS OWNERSHIP of it: this constructor
+        // copies the pixel data into a WPF bitmap and never stores the wrapper, so the
+        // caller can (and should) dispose it right after construction -- see the 'using' in
+        // MainWindowViewModel. Fetching 'track.representativeThumbnail' in here instead
+        // would create a second native wrapper that somebody else would have to dispose.
+        public LicensePlateViewModel(ITrackedPlateCandidate track, IVideoFrame thumbnail)
         {
             var candidate = track.representativeCandidate;
             Debug.Assert(candidate.matches.Count > 0);
+            Debug.Assert(thumbnail != null);
 
             Text = candidate.matches[0].text;
             CountryCode = candidate.matches[0].countryISO;
             TimeStamp = TimeSpan.FromSeconds(track.representativeTimestamp);
 
-            // Use the representative thumbnail directly
-            var thumbnail = track.representativeThumbnail;
-            Debug.Assert(thumbnail != null);
-
             var width = (int)thumbnail.width;
             var height = (int)thumbnail.height;
             var stride = (int)thumbnail.widthStep;
 
+            // BitmapSource.Create COPIES the pixels out of the native buffer into managed
+            // memory, so the bitmap remains valid after the caller disposes the thumbnail.
             Image = BitmapSource.Create(width, height,
                                         96, 96,
                                         PixelFormats.Bgr24, null,

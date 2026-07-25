@@ -47,7 +47,13 @@ namespace VideoANPR.Observables
                 // Method to query a frame from the video source and handle exceptions
                 Action<Action> queryFrame = (self) =>
                 {
-                    if (bCompleted) return;
+                    // Both flags must be checked here: 'bCompleted' covers natural termination,
+                    // while 'bUnsubscribed' covers an already-scheduled iteration that runs
+                    // AFTER the subscription has been disposed -- disposing a subscription does
+                    // not interrupt work the scheduler has already dequeued. Without this
+                    // check, a stale iteration could invoke nextFrame() on a source its owner
+                    // is already tearing down.
+                    if (bCompleted || bUnsubscribed) return;
 
                     try
                     {
@@ -120,6 +126,13 @@ namespace VideoANPR.Observables
         /// <returns>An IObservable of IVideoFrame.</returns>
         /// <remarks>
         /// Note: The caller is responsible for disposing the videoSource.
+        /// IMPORTANT: video sources are single-threaded objects, and this observable calls
+        /// nextFrame() on the scheduler's thread. The final Dispose() of the source must be
+        /// serialized with that loop: provide your own EventLoopScheduler and, when stopping,
+        /// dispose the subscription first and then SCHEDULE the source disposal on that same
+        /// scheduler, so it runs strictly after any in-flight frame query (see
+        /// MainWindowViewModel.StopCapture for the pattern). Disposing the source from another
+        /// thread while the loop may still be running is a race.
         /// If no scheduler is provided, a new EventLoopScheduler is created and will be disposed when all subscriptions are disposed.
         /// </remarks>
         public static IObservable<IVideoFrame> ToObservable(

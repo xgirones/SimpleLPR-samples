@@ -142,10 +142,23 @@ namespace VideoANPR.Observables
                 return Disposable.Create(() =>
                 {
                     bCompleted = true;
-                    // Flush any pending tracks before disposing to reset the tracker to its initial state
-                    var flushResult = tracker.flush();
-                    flushResult.Dispose();
                     subscription.Dispose();
+
+                    // NOTE: earlier versions called tracker.flush() right here "to reset the
+                    // tracker", and that was a subtle THREADING BUG worth understanding.
+                    // This teardown callback runs on whichever thread disposes the
+                    // subscription -- typically the UI thread handling a Stop click -- while
+                    // an in-flight OnNext may still be executing
+                    // tracker.processFrameCandidates() on the pipeline's thread. SimpleLPR
+                    // objects are single-threaded: two concurrent calls into the same
+                    // tracker race on native state. The general rule this illustrates:
+                    //   - IN-BAND work (inside the OnNext/OnError/OnCompleted handlers
+                    //     above) runs on the pipeline's thread, serialized with everything
+                    //     else the pipeline does -- the flushes in those handlers are safe.
+                    //   - TEARDOWN callbacks like this one run on an arbitrary thread and
+                    //     must NOT touch single-threaded native objects.
+                    // The tracker reset now happens in MainWindowViewModel.StartCapture,
+                    // safely between runs when no pipeline exists.
                 });
             });
         }
