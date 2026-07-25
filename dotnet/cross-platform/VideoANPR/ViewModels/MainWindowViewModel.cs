@@ -109,6 +109,11 @@ namespace VideoANPR.ViewModels
 
         private IVideoSource? videoSource_ = null;   // The video source for acquiring frames
         private IDisposable? dispSimpleLPR_ = null;  // Disposable object for handling the SimpleLPR frame pipeline
+        // Scheduler that runs the video capture loop. Owned here (rather than letting
+        // ToObservable create an internal one) so that StopCapture can dispose the video
+        // source ON this scheduler, strictly serialized with the frame loop -- video sources
+        // are single-threaded objects.
+        private EventLoopScheduler? captureScheduler_ = null;
 
         private readonly SourceList<LicensePlateViewModel> lpList_ = new SourceList<LicensePlateViewModel>();  // Source list of detected license plate view models
         // The observable collection of license plate view models associated to lpList_
@@ -436,6 +441,16 @@ namespace VideoANPR.ViewModels
             // Clear any previously detected license plates
             lpList_.Clear();
 
+            // Reset the plate tracker before starting a new run. A user-initiated Stop tears
+            // the pipeline down without a final flush (see the teardown note in
+            // LicensePlateAggregateObservable), so tracks can be left open inside the
+            // tracker -- and stale tracks from the previous video would merge with the first
+            // detections of the new one. Doing the reset HERE is safe with respect to
+            // threading: between captures no pipeline exists, so nothing else is using the
+            // tracker. The returned result carries any leftover tracks; they are not
+            // displayed, so it is disposed immediately.
+            plateTracker_!.flush().Dispose();
+
             // Apply the country weights selected in the UI to the SimpleLPR engine
             // This must be called after changing country weights and before processing
             lpr_.realizeCountryWeights();
@@ -464,10 +479,15 @@ namespace VideoANPR.ViewModels
             // Using WhenAnyValue to react to changes in the CurrentPlaybackStatus property
             var obPaused = this.WhenAnyValue(x => x.CurrentPlaybackStatus, x => x == PlaybackStatus.Paused);
 
+            // Create the scheduler that will run the capture loop. Owning it here lets
+            // StopCapture dispose the video source on this same scheduler, i.e. strictly
+            // serialized with the frame loop (see the remarks in StopCapture).
+            captureScheduler_ = new EventLoopScheduler();
+
             // Set up the video processing pipeline:
             // This reactive pipeline processes frames from the video source through several stages
             dispSimpleLPR_ = videoSource_
-                .ToObservable(obPaused)                           // 1. Convert video frames to reactive stream
+                .ToObservable(obPaused, captureScheduler_)        // 1. Convert video frames to reactive stream
                 .ToSimpleLPR(processorPool_)                      // 2. Process frames with ANPR engine
                 .AggregateIntoRepresentatives(plateTracker_)      // 3. Track plates across multiple frames                
                 .Subscribe(
@@ -489,14 +509,22 @@ namespace VideoANPR.ViewModels
                             // Iterate through new tracks that met the tracking criteria
                             foreach (var track in aggregatedResult.TrackerResult.NewTracks)
                             {
+                                // The 'representativeThumbnail' property creates a NEW
+                                // wrapper around the native thumbnail on EVERY access, and
+                                // every wrapper must be disposed. Fetch it exactly once and
+                                // scope it with 'using': the view model copies the pixels
+                                // into a bitmap, so the wrapper can be released the moment
+                                // construction finishes. (The previous code read the
+                                // property twice -- once for the null check and once inside
+                                // the constructor -- and disposed neither.)
+                                using IVideoFrame? thumbnail = track.representativeThumbnail;
+
                                 // Only create view models for tracks with thumbnails and valid plate text
-                                // The thumbnail should be available from the representative frame
-                                if (track.representativeThumbnail != null &&
+                                if (thumbnail != null &&
                                     track.representativeCandidate.matches.Count > 0)
                                 {
                                     // Add the new plate to the beginning of the list
-                                    // This creates a view model directly from the tracked plate
-                                    lpList_.Insert(0, new LicensePlateViewModel(track));
+                                    lpList_.Insert(0, new LicensePlateViewModel(track, thumbnail));
                                 }
                             }
 
@@ -575,15 +603,47 @@ namespace VideoANPR.ViewModels
                 dispSimpleLPR_ = null;
             }
 
-            // Clean up the video source
+            // Clean up the video source.
+            //
+            // IMPORTANT: video sources are single-threaded objects, and the capture loop calls
+            // nextFrame() on the capture scheduler's thread. Disposing the source right here on
+            // the UI thread would race an in-flight frame query -- disposing the subscription
+            // above does not interrupt an iteration that is already running. Since SimpleLPR
+            // 3.6.4, Dispose() also performs the full synchronous teardown (file close / RTSP
+            // TEARDOWN), which makes that window wide enough to hit in practice.
+            //
+            // Therefore the disposal is SCHEDULED on the capture scheduler: it is strictly
+            // FIFO and single-threaded, so the disposal runs after any in-flight or queued
+            // frame query, on the very thread that made every nextFrame() call. The scheduler
+            // then disposes itself, ending its thread.
             if (videoSource_ is not null)
             {
-                // Disposing the video source will:
-                // 1. Close the video file or camera
-                // 2. Release associated resources
-                // 3. Free native memory
-                videoSource_.Dispose();
+                IVideoSource vs = videoSource_;
                 videoSource_ = null;
+
+                EventLoopScheduler? sched = captureScheduler_;
+                captureScheduler_ = null;
+
+                if (sched is not null)
+                {
+                    sched.Schedule(() =>
+                    {
+                        // 1. Close the video file or camera (full synchronous teardown)
+                        // 2. Release associated resources and free native memory
+                        vs.Dispose();
+
+                        // End the capture scheduler's thread. Nothing can be scheduled on it
+                        // beyond this point: the pipeline subscription (and with it the pause
+                        // handler) was disposed above, and the frame loop's recursion has
+                        // stopped.
+                        sched.Dispose();
+                    });
+                }
+                else
+                {
+                    // No scheduler in flight (defensive): dispose inline.
+                    vs.Dispose();
+                }
             }
 
             // Note: We don't dispose of the processor pool or plate tracker here

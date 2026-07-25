@@ -282,12 +282,19 @@ namespace VideoANPR.Services
         {
             string thumbnailPath = Path.Combine(OutputDirectory!, $"{baseFileName}.jpg");
 
-            // Get the thumbnail from the track
-            var thumbnail = track.representativeThumbnail;
+            // Get the thumbnail from the track. The property creates a NEW native wrapper
+            // on every access, and every wrapper must be disposed -- the 'using' below
+            // releases it as soon as the JPEG has been written. (Earlier versions never
+            // disposed it, leaking one native thumbnail per logged plate until the garbage
+            // collector got around to it.)
+            using var thumbnail = track.representativeThumbnail;
             if (thumbnail != null)
             {
                 // Use SimpleLPR's built-in method to save as JPEG
                 // Using quality 95 for high-quality output (range: 0-100, or -1 for default)
+                // Note: since SimpleLPR 3.6.4, saveAsJPEG reports failures by throwing an
+                // exception (it used to fail silently); the caller already wraps this call
+                // in a try/catch and logs the problem.
                 await Task.Run(() => thumbnail.saveAsJPEG(thumbnailPath, 95));
             }
             else

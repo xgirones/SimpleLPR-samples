@@ -54,6 +54,12 @@ namespace VideoANPR.Views
     {
         RenderTargetBitmap? bitmapCanvas_ = null;
 
+        // LATEST-FRAME-WINS CONFLATION SLOT (see OnNewFrame / DrainPendingFrame).
+        // Written by the capture thread, drained by the UI thread; both sides synchronize
+        // through pendingFrameLock_. At most ONE frame is ever waiting to be drawn.
+        private readonly object pendingFrameLock_ = new object();
+        private (Bitmap Bitmap, List<Candidate>? Candidates)? pendingFrame_ = null;
+
         /// <summary>
         /// Creates a geometry from text that can be scaled to fit any bounding box.
         /// </summary>
@@ -152,16 +158,21 @@ namespace VideoANPR.Views
         /// Draws license plate overlays on the video frame to visualize detections.
         /// </summary>
         /// <param name="ctx">The drawing context to draw on.</param>
-        /// <param name="resultLPR">The frame result containing the detected license plates.</param>
-        private void DrawOverlays(DrawingContext ctx, FrameResultLPR resultLPR)
+        /// <param name="candidates">The detected license plate candidates (plain managed data).</param>
+        private void DrawOverlays(DrawingContext ctx, List<Candidate>? candidates)
         {
+            // The candidate list arrives as plain managed data, extracted from the frame
+            // result BEFORE it was disposed (see OnNewFrame). This method runs on the UI
+            // thread, potentially long after the pipeline disposed the native result --
+            // which is precisely why it must not receive the FrameResultLPR itself.
+            //
             // Only draw overlays if:
             // 1. The bitmap canvas exists
             // 2. Overlay drawing is enabled in the view model
-            // 3. There are license plate candidates in the result
+            // 3. There are license plate candidates
             if (this.bitmapCanvas_ != null &&
                 this.ViewModel!.DrawOverlaysEnabled &&
-                resultLPR.Result.candidates != null)
+                candidates != null)
             {
                 // Calculate the scaling factor for the drawing
                 // This ensures consistent line thickness regardless of video size
@@ -186,7 +197,7 @@ namespace VideoANPR.Views
                 Color c2 = Color.Parse("Blue");       // High confidence color
 
                 // Process each license plate candidate in the result
-                foreach (Candidate lp in resultLPR.Result.candidates)
+                foreach (Candidate lp in candidates)
                 {
                     // Get the vertices of the plate region
                     // These may come from plate detection or the text bounding box
@@ -259,45 +270,21 @@ namespace VideoANPR.Views
         /// <param name="resultLPR">The frame result containing the video frame and detection results.</param>
         private void OnNewFrame(FrameResultLPR resultLPR)
         {
-            // Get the video frame from the result
+            // THIS METHOD RUNS ON THE CAPTURE THREAD, synchronously inside the interaction.
+            // The view model disposes resultLPR.Frame and resultLPR.Result the moment this
+            // method returns, so everything needed later must be COPIED OUT here and now:
+            //   - the PIXELS are copied by the Bitmap constructor below;
+            //   - the CANDIDATE LIST is materialized into plain managed objects by the
+            //     'candidates' property.
+            // Earlier versions captured 'resultLPR' itself inside a deferred UI lambda and
+            // read 'Result.candidates' there -- i.e. AFTER the result had been disposed.
+            // It only worked by accident (the wrapper happens to cache the converted list);
+            // the rule to take away is: never touch a native wrapper from deferred work that
+            // may run after its owner disposed it.
             var videoFrame = resultLPR.Frame;
 
-            // Check if we need to create or resize the bitmap canvas
-            // This happens when:
-            // 1. This is the first frame (bitmapCanvas_ is null)
-            // 2. The frame size has changed
-            if (this.bitmapCanvas_ is null ||
-                this.bitmapCanvas_.PixelSize.Width != videoFrame.width ||
-                this.bitmapCanvas_.PixelSize.Height != videoFrame.height)
-            {
-                // Store the old bitmap canvas for proper disposal after switch
-                RenderTargetBitmap? bmcOld = this.bitmapCanvas_;
-
-                // Create a new render target bitmap with the size of the current frame
-                // This bitmap serves as the drawing surface for the video display
-                this.bitmapCanvas_ = new RenderTargetBitmap(
-                    pixelSize: new PixelSize((int)videoFrame.width, (int)videoFrame.height),
-                    dpi: new Vector(96, 96));  // Standard DPI
-
-                // Schedule UI updates to be executed on the UI thread
-                // This ensures thread safety when manipulating UI elements
-                RxApp.MainThreadScheduler.Schedule(_ =>
-                {
-                    // Update the background image of the video canvas
-                    ImageBrush? imb = this.VideoCanvas.Background as ImageBrush;
-                    if (imb != null)
-                    {
-                        imb.Source = this.bitmapCanvas_;
-                    }
-
-                    // Dispose the old bitmap canvas to prevent memory leaks
-                    // This must be done on the UI thread after the switch is complete
-                    bmcOld?.Dispose();
-                });
-            }
-
-            // Create a bitmap directly from the video frame data
-            // Note: The SimpleLPR IVideoFrame provides direct memory access
+            // Create a bitmap from the video frame data. The constructor COPIES the pixels
+            // into the bitmap's own memory, so the frame can be disposed safely afterwards.
             Bitmap bitmap = new Bitmap(
                 PixelFormats.Bgr24,                           // Use BGR24 format (matches SimpleLPR's output)
                 AlphaFormat.Opaque,                           // No alpha channel needed
@@ -307,32 +294,104 @@ namespace VideoANPR.Views
                 new Avalonia.Vector(96, 96),                  // Standard DPI
                 (int)videoFrame.widthStep);                   // Row stride from the frame (bytes per row)
 
-            // Schedule drawing operations to be executed on the UI thread
-            // This ensures thread safety and synchronization with the UI
-            RxApp.MainThreadScheduler.Schedule(_ =>
+            // Extract the candidates as plain managed data for the overlay pass.
+            List<Candidate>? candidates = resultLPR.Result.candidates;
+
+            // LATEST-FRAME-WINS CONFLATION (backpressure). The capture thread can outpace
+            // the UI thread -- especially with software rendering on Linux. Scheduling one
+            // UI work item per frame, as earlier versions did, let work items (each holding
+            // a full-frame bitmap copy!) queue up without bound: memory grows and the
+            // display lags further and further behind the video. Instead, a single "pending
+            // frame" slot is kept: a newer frame simply REPLACES an undrawn older one
+            // (which is disposed right here), and a UI drain pass is scheduled only when
+            // the slot was empty. The UI always draws the newest available frame;
+            // intermediate frames are skipped -- for a live display, that is exactly what
+            // you want.
+            Bitmap? superseded = null;
+            bool bScheduleDrain = false;
+
+            lock (pendingFrameLock_)
             {
-                // Use a using statement to ensure the bitmap is disposed
-                // after it's drawn to the canvas
-                using (Bitmap bm = bitmap)
+                if (pendingFrame_ is not null)
+                    superseded = pendingFrame_.Value.Bitmap;
+                else
+                    bScheduleDrain = true;
+
+                pendingFrame_ = (bitmap, candidates);
+            }
+
+            // Dispose outside the lock: never hold a lock across foreign code.
+            superseded?.Dispose();
+
+            if (bScheduleDrain)
+            {
+                RxApp.MainThreadScheduler.Schedule(_ => DrainPendingFrame());
+            }
+        }
+
+        /// <summary>
+        /// Draws the newest pending frame onto the video canvas. RUNS ON THE UI THREAD.
+        /// </summary>
+        private void DrainPendingFrame()
+        {
+            // Take the pending frame, if any. Everything in it is either managed data or a
+            // bitmap this method now owns -- no native SimpleLPR object is touched here.
+            (Bitmap Bitmap, List<Candidate>? Candidates) frame;
+
+            lock (pendingFrameLock_)
+            {
+                if (pendingFrame_ is null) return;
+
+                frame = pendingFrame_.Value;
+                pendingFrame_ = null;
+            }
+
+            // Use a using statement to ensure the bitmap is disposed after it's drawn
+            using (Bitmap bm = frame.Bitmap)
+            {
+                // (Re)create the drawing surface when the frame size changes. All canvas
+                // management now happens HERE, on the UI thread -- earlier versions mutated
+                // bitmapCanvas_ from the capture thread while scheduled lambdas read it from
+                // the UI thread.
+                if (this.bitmapCanvas_ is null ||
+                    this.bitmapCanvas_.PixelSize.Width != bm.PixelSize.Width ||
+                    this.bitmapCanvas_.PixelSize.Height != bm.PixelSize.Height)
                 {
-                    // Create a drawing context for the bitmap canvas
-                    // This context allows drawing operations to be performed
-                    using (DrawingContext ctx = this.bitmapCanvas_.CreateDrawingContext())
+                    // Store the old bitmap canvas for proper disposal after the switch
+                    RenderTargetBitmap? bmcOld = this.bitmapCanvas_;
+
+                    // Create a new render target bitmap with the size of the current frame
+                    this.bitmapCanvas_ = new RenderTargetBitmap(
+                        pixelSize: bm.PixelSize,
+                        dpi: new Vector(96, 96));  // Standard DPI
+
+                    // Update the background image of the video canvas
+                    ImageBrush? imb = this.VideoCanvas.Background as ImageBrush;
+                    if (imb != null)
                     {
-                        // Draw the video frame image onto the canvas
-                        // This copies the pixel data into the render target
-                        ctx.DrawImage(bm, new Rect(bitmapCanvas_.Size));
-
-                        // Draw license plate overlays if enabled
-                        // This adds visual indicators for detected plates and text
-                        DrawOverlays(ctx, resultLPR);
-
-                        // Invalidate the video canvas to trigger a visual update
-                        // This ensures the UI shows the new frame
-                        this.VideoCanvas.InvalidateVisual();
+                        imb.Source = this.bitmapCanvas_;
                     }
+
+                    // Dispose the old bitmap canvas to prevent memory leaks
+                    bmcOld?.Dispose();
                 }
-            });
+
+                // Create a drawing context for the bitmap canvas
+                using (DrawingContext ctx = this.bitmapCanvas_.CreateDrawingContext())
+                {
+                    // Draw the video frame image onto the canvas
+                    // This copies the pixel data into the render target
+                    ctx.DrawImage(bm, new Rect(bitmapCanvas_.Size));
+
+                    // Draw license plate overlays if enabled
+                    // This adds visual indicators for detected plates and text
+                    DrawOverlays(ctx, frame.Candidates);
+
+                    // Invalidate the video canvas to trigger a visual update
+                    // This ensures the UI shows the new frame
+                    this.VideoCanvas.InvalidateVisual();
+                }
+            }
         }
 
         /// <summary>
@@ -506,7 +565,11 @@ namespace VideoANPR.Views
                     context.SetOutput(Unit.Default);
                 }).DisposeWith(disposables);
 
-            // Register the interaction handler for displaying video frames
+            // Register the interaction handler for displaying video frames.
+            // NOTE: interaction handlers run SYNCHRONOUSLY on the thread that raised the
+            // interaction -- here, the capture thread. OnNewFrame relies on this contract:
+            // it must copy everything it needs out of the frame result BEFORE returning,
+            // because the view model disposes the result's native objects right afterwards.
             this.ViewModel?.OnNewFrame.RegisterHandler(
                 context =>
                 {
