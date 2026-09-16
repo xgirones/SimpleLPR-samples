@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SimpleLPR Java QuickStart Guide</title>
+<style>
+  body { font-family: Segoe UI, Helvetica, Arial, sans-serif; max-width: 54em;
+         margin: 2em auto; padding: 0 1em; color: #222; line-height: 1.5; }
+  h1 { border-bottom: 2px solid #33618d; padding-bottom: .3em; color: #33618d; }
+  h2 { color: #33618d; margin-top: 2em; border-bottom: 1px solid #d5dde5; padding-bottom: .2em; }
+  h3 { color: #44708f; margin-top: 1.4em; }
+  code, pre { font-family: Consolas, Menlo, monospace; background: #f4f6f8; }
+  code { padding: .1em .3em; border-radius: 3px; }
+  pre  { padding: .8em 1em; border-radius: 5px; overflow-x: auto;
+         border: 1px solid #dde3e8; }
+  .note { background: #f0f6ff; border-left: 4px solid #33618d;
+          padding: .6em 1em; margin: 1em 0; }
+  .warn { background: #fff7ef; border-left: 4px solid #c77f2e;
+          padding: .6em 1em; margin: 1em 0; }
+  table { border-collapse: collapse; }
+  td, th { border: 1px solid #ccd4da; padding: .35em .7em; text-align: left; }
+  nav ul { columns: 2; list-style: none; padding-left: 0; }
+  nav li { margin: .15em 0; }
+</style>
+</head>
+<body>
+
+<h1>SimpleLPR Java QuickStart Guide</h1>
+
+<p>The SimpleLPR Java wrapper gives Java 11+ applications access to the full
+SimpleLPR automatic number plate recognition engine: image analysis, concurrent
+processing pools, video sources and plate tracking. It is a pure-Java binding
+over the same native library used by the C/C++, .NET and Python interfaces
+&mdash; no native compilation is ever required on your side.</p>
+
+<nav>
+<h2>Table of Contents</h2>
+<ul>
+  <li><a href="#install">1. Installation</a></li>
+  <li><a href="#setup">2. Basic Setup</a></li>
+  <li><a href="#first">3. Your First Recognition</a></li>
+  <li><a href="#images">4. Working with Images</a></li>
+  <li><a href="#video">5. Processing Video Files</a></li>
+  <li><a href="#streams">6. Real-time Video Streams</a></li>
+  <li><a href="#pool">7. Multi-threaded Processing</a></li>
+  <li><a href="#tracking">8. License Plate Tracking</a></li>
+  <li><a href="#advanced">9. Advanced Configuration</a></li>
+  <li><a href="#patterns">10. Patterns and Best Practices</a></li>
+  <li><a href="#errors">11. Error Handling</a></li>
+  <li><a href="#performance">12. Performance Optimization</a></li>
+</ul>
+</nav>
+
+<h2 id="install">1. Installation</h2>
+
+<h3>Requirements</h3>
+<ul>
+  <li>A Java Development Kit (JDK), version 11 or newer &mdash; e.g.
+      <a href="https://adoptium.net/">Eclipse Temurin</a>.</li>
+  <li>The SimpleLPR SDK, version 3.6.5 or newer, installed
+      (Windows x64 or Linux x64).</li>
+</ul>
+
+<p>Maven does <em>not</em> need to be installed: the <code>mvnw</code> /
+<code>mvnw.cmd</code> wrapper scripts bundled with the samples download and run
+it automatically. The quickest start is running the bundled samples from the
+SDK's <code>samples/java</code> folder:</p>
+
+<pre>cd "C:\Program Files\Warelogic\SimpleLPR 3.6\samples\java"
+mvnw.cmd -pl simplelpr-sample-platereader exec:java -Dexec.args="--country Spain C:\path\to\car.jpg"</pre>
+
+<p>To use the wrapper in your own Maven project, declare the SDK's local
+repository and the dependency (or simply copy a sample folder as a template):</p>
+
+<pre>&lt;repositories&gt;
+    &lt;repository&gt;
+        &lt;id&gt;simplelpr-sdk&lt;/id&gt;
+        &lt;!-- Adjust to your installation; encode spaces as %20 --&gt;
+        &lt;url&gt;file:///C:/Program%20Files/Warelogic/SimpleLPR%203.6/samples/java/lib/repo&lt;/url&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;
+
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.warelogic&lt;/groupId&gt;
+        &lt;artifactId&gt;simplelpr&lt;/artifactId&gt;
+        &lt;version&gt;3.6.5&lt;/version&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;</pre>
+
+<p>The repository also carries the <code>-sources</code> and
+<code>-javadoc</code> jars, so IDEs such as IntelliJ IDEA show the wrapper's
+documentation and source code as you navigate.</p>
+
+<h3>Alternative: Maven Central, no SDK installation</h3>
+
+<p>The wrapper is also published on Maven Central. To use SimpleLPR without an
+installed SDK, declare the wrapper plus the natives artifact for your platform
+(or both, for a portable build):</p>
+
+<pre>&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.warelogic&lt;/groupId&gt;
+        &lt;artifactId&gt;simplelpr&lt;/artifactId&gt;
+        &lt;version&gt;3.6.6&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.warelogic&lt;/groupId&gt;
+        &lt;artifactId&gt;simplelpr&lt;/artifactId&gt;
+        &lt;version&gt;3.6.6&lt;/version&gt;
+        &lt;classifier&gt;natives-win-x64&lt;/classifier&gt;   &lt;!-- or natives-linux-x64 --&gt;
+        &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;</pre>
+
+<p>On first run the native binaries are extracted from the classpath to
+<code>~/.cache/simplelpr/&lt;version&gt;/&lt;platform&gt;</code> (override with the
+<code>simplelpr.cache.dir</code> system property). A 60-day evaluation license
+is included; for licensed use, register your product key with
+<code>setProductKey</code>. An installed SDK, when present, takes precedence
+over the classpath natives.</p>
+
+<h2 id="setup">2. Basic Setup</h2>
+
+<h3>Minimal Example</h3>
+
+<pre>import com.warelogic.simplelpr.*;
+
+public class Version {
+    public static void main(String[] args) {
+        // try-with-resources (the Java equivalent of C#'s 'using') guarantees
+        // native resources are released; the engine implements AutoCloseable.
+        try (SimpleLPR lpr = SimpleLPR.setup(new EngineSetupParams())) {
+            System.out.println("SimpleLPR version: " + lpr.getVersionNumber());
+            System.out.println("Supported countries: " + lpr.getSupportedCountries().size());
+        }
+    }
+}</pre>
+
+<p><code>EngineSetupParams</code> defaults select CPU-only operation with the
+recommended concurrency. When a CUDA-compatible GPU is available, image
+processing and classification can be off-loaded independently:</p>
+
+<pre>EngineSetupParams params = new EngineSetupParams()
+        .setCudaDeviceId(0)                       // -1 = CPU (default)
+        .setEnableImageProcessingWithGPU(true)
+        .setEnableClassificationWithGPU(true)
+        .setMaxConcurrentImageProcessingOps(4);   // 0 = recommended value
+try (SimpleLPR lpr = SimpleLPR.setup(params)) { ... }</pre>
+
+<h3>License Key Setup</h3>
+
+<p>Without a product key the engine runs in evaluation mode for a limited
+period. To register a key, call right after setup:</p>
+
+<pre>lpr.setProductKey(java.nio.file.Paths.get("C:/licenses/simplelpr_key.xml"));</pre>
+
+<h3>How the native library is located</h3>
+
+<p>At <code>SimpleLPR.setup(...)</code> time the wrapper looks for the native
+binaries in this order:</p>
+<ol>
+  <li>an explicit folder passed to
+      <code>SimpleLPR.setup(params, nativeFolderPath)</code>;</li>
+  <li>the <code>simplelpr.native.path</code> system property or the
+      <code>SIMPLELPR_NATIVE_PATH</code> environment variable;</li>
+  <li>folders relative to the wrapper's location and to the working directory,
+      matching the SDK layout &mdash; which is why programs run from inside the
+      SDK tree need no configuration at all.</li>
+</ol>
+
+<p>For applications deployed outside the SDK tree, option 2 is usually the most
+convenient, pointing at the SDK's <code>bin</code> (Windows) or
+<code>lib</code> (Linux) folder:</p>
+
+<pre>java -Dsimplelpr.native.path="C:\Program Files\Warelogic\SimpleLPR 3.6\bin" -jar yourapp.jar</pre>
+
+<h2 id="first">3. Your First Recognition</h2>
+
+<pre>import com.warelogic.simplelpr.*;
+import java.nio.file.Paths;
+import java.util.List;
+
+public class HelloPlate {
+    public static void main(String[] args) {
+        try (SimpleLPR lpr = SimpleLPR.setup(new EngineSetupParams())) {
+
+            // Enable the countries you expect; disable the rest.
+            for (String c : lpr.getSupportedCountries()) lpr.setCountryWeight(c, 0f);
+            lpr.setCountryWeight("Spain", 1f);
+            lpr.realizeCountryWeights();   // builds lookup tables; call once after configuring
+
+            try (Processor proc = lpr.createProcessor()) {
+                proc.setPlateRegionDetectionEnabled(true);
+                proc.setCropToPlateRegionEnabled(true);
+
+                List&lt;Candidate&gt; found = proc.analyzeFile(Paths.get(args[0]));
+                for (Candidate cand : found) {
+                    System.out.printf("Plate region confidence %.2f, %s background%n",
+                            cand.getPlateRegionDetectionConfidence(),
+                            cand.isBrightBackground() ? "bright" : "dark");
+                    for (CountryMatch m : cand.getMatches()) {
+                        System.out.printf("  %-12s [%s] confidence %.3f%n",
+                                m.getText(), m.getCountryISO(), m.getConfidence());
+                        for (Element e : m.getElements()) {
+                            System.out.printf("    '%c' (%.2f) at [%d, %d]%n",
+                                    e.getGlyph(), e.getConfidence(),
+                                    e.getBoundingBox().getLeft(), e.getBoundingBox().getTop());
+                        }
+                    }
+                }
+            }
+        }
+    }
+}</pre>
+
+<p>How to read the results:</p>
+<ul>
+  <li>Each <code>Candidate</code> is one plate-like region, with a bounding box,
+      region-detection confidence and quadrilateral vertices.</li>
+  <li>Its <code>getMatches()</code> list holds the country interpretations.
+      <strong>The last entry is the raw text before syntax validation</strong>
+      (empty country/ISO code) &mdash; the reason a plate often appears twice in
+      simple listings. <code>getCountryISO()</code> returns the ISO Alpha-2 code
+      ("ES", "DE"...).</li>
+  <li>Each match's <code>getElements()</code> lists the recognized characters
+      with per-character confidence and position. The match confidence is the
+      product of its element confidences &mdash; a ranking value in [0, 1], not
+      a probability.</li>
+</ul>
+
+<h2 id="images">4. Working with Images</h2>
+
+<h3>Different Input Methods</h3>
+
+<pre>// 1. From a file (.jpg, .png or .tif; 24-bit RGB or 8-bit grayscale)
+List&lt;Candidate&gt; r1 = proc.analyzeFile(Paths.get("car.jpg"));
+
+// 2. From the encoded file bytes held in memory
+byte[] encoded = java.nio.file.Files.readAllBytes(Paths.get("car.jpg"));
+List&lt;Candidate&gt; r2 = proc.analyzeEncodedImage(encoded);
+
+// 3. From raw 8-bit grayscale pixels (top-down, widthStep bytes per row)
+byte[] gray = ...;
+List&lt;Candidate&gt; r3 = proc.analyzeGray8(gray, width, width, height);
+
+// 4. From raw BGR24 pixels; the weights define the grayscale conversion
+//    L = w0*C0 + w1*C1 + w2*C2  (BGR: 0.114, 0.587, 0.299 / RGB: reversed)
+byte[] bgr = ...;
+List&lt;Candidate&gt; r4 = proc.analyzeC3(bgr, width * 3, width, height, 0.114f, 0.587f, 0.299f);
+
+// 5. Zero-copy from native memory via a DIRECT ByteBuffer -- the Java analog
+//    of the .NET IntPtr overloads. Ideal when pixels come from a camera SDK,
+//    OpenCV, or a VideoFrame's data buffer.
+java.nio.ByteBuffer direct = ...; // e.g. frame.getDataBuffer()
+List&lt;Candidate&gt; r5 = proc.analyzeGray8(direct, width, width, height);</pre>
+
+<h3>Batch Processing Multiple Images (sequential)</h3>
+
+<pre>try (Processor proc = lpr.createProcessor()) {
+    try (var files = java.nio.file.Files.list(Paths.get("C:/images"))) {
+        for (var img : (Iterable&lt;java.nio.file.Path&gt;) files::iterator) {
+            List&lt;Candidate&gt; found = proc.analyzeFile(img);
+            System.out.println(img.getFileName() + ": " + found.size() + " candidate(s)");
+        }
+    }
+}</pre>
+
+<p>For high throughput, use a <a href="#pool">processor pool</a> instead.</p>
+
+<h2 id="video">5. Processing Video Files</h2>
+
+<h3>Basic Video Processing</h3>
+
+<pre>// GRAY8 is the cheapest format when frames are only analyzed, never displayed.
+try (VideoSource source = lpr.openVideoSource("traffic.mp4", FrameFormat.GRAY8, 1920, -1);
+     Processor proc = lpr.createProcessor()) {
+
+    for (VideoFrame frame; (frame = source.nextFrame()) != null; ) {
+        // One try-with-resources per frame: frames wrap native pixel memory
+        // the Java garbage collector cannot see, so close each one promptly.
+        try (VideoFrame f = frame) {
+            List&lt;Candidate&gt; found = proc.analyzeVideoFrame(f);
+            if (!found.isEmpty()) {
+                System.out.printf("frame %d (t=%.2fs): %s%n",
+                        f.getSequenceNumber(), f.getTimestamp(),
+                        found.get(0).getMatches().get(0).getText());
+            }
+        }
+    }
+    // nextFrame() returned null: EOF or error -- getState() tells which.
+    System.out.println("Stream ended in state " + source.getState());
+}</pre>
+
+<p>The <code>maxWidthCap</code>/<code>maxHeightCap</code> arguments of
+<code>openVideoSource</code> (here 1920 / uncapped) isotropically downscale
+larger frames before delivery &mdash; a cheap way to bound processing cost.</p>
+
+<h3>Saving Frame Thumbnails</h3>
+
+<pre>try (VideoFrame f = frame) {
+    f.saveAsJPEG(Paths.get("frame_" + f.getSequenceNumber() + ".jpg"), 90); // quality 0..100, -1 = default
+    byte[] pixels = f.copyData();          // or copy the raw pixels instead
+    java.nio.ByteBuffer view = f.getDataBuffer(); // zero-copy view, valid while open
+}</pre>
+
+<h2 id="streams">6. Real-time Video Streams</h2>
+
+<pre>try (VideoSource source = lpr.openVideoSource("rtsp://camera.local/stream",
+                                              FrameFormat.GRAY8, 1280, -1);
+     Processor proc = lpr.createProcessor()) {
+
+    System.out.println("Live source: " + source.isLiveSource()); // true for streams
+
+    while (true) {
+        VideoFrame frame = source.nextFrame();
+        if (frame == null) {
+            VideoSourceState state = source.getState();
+            if (state == VideoSourceState.EOF || state == VideoSourceState.IO_ERROR) {
+                System.out.println("Connection lost (" + state + "), reconnecting...");
+                if (source.reconnect()) continue;   // live sources only
+            }
+            break; // unrecoverable
+        }
+        try (VideoFrame f = frame) {
+            process(proc.analyzeVideoFrame(f));
+        }
+    }
+}</pre>
+
+<h2 id="pool">7. Multi-threaded Processing</h2>
+
+<p><code>ProcessorPool</code> runs several processors on internal worker
+threads: you <em>launch</em> requests and <em>poll</em> results, without
+managing threads yourself.</p>
+
+<pre>try (ProcessorPool pool = lpr.createProcessorPool()) {   // no-arg = sized by CPU cores
+    pool.setPlateRegionDetectionEnabled(true);
+    pool.setCropToPlateRegionEnabled(true);
+
+    long requestId = 0;
+    try (var files = java.nio.file.Files.list(Paths.get("C:/images"))) {
+        for (var img : (Iterable&lt;java.nio.file.Path&gt;) files::iterator) {
+            // Blocks while all processors are busy (TIMEOUT_INFINITE) -- a
+            // natural throttle. streamId groups related requests; results
+            // within one stream come back in launch order.
+            pool.launchAnalyzeFile(0, requestId++, 0.0,
+                                   ProcessorPool.TIMEOUT_INFINITE, img);
+
+            // Drain whatever is already finished, without blocking.
+            for (PoolResult r;
+                 (r = pool.pollNextResult(0, ProcessorPool.TIMEOUT_IMMEDIATE)) != null; ) {
+                report(r);
+            }
+        }
+    }
+    // Wait for the stragglers.
+    while (pool.getOngoingRequestCount(ProcessorPool.STREAM_ID_ANY) &gt; 0) {
+        report(pool.pollNextResult(ProcessorPool.STREAM_ID_ANY, ProcessorPool.TIMEOUT_INFINITE));
+    }
+}
+
+static void report(PoolResult r) {
+    if (!r.isSuccess()) {              // per-request failures are reported, not thrown
+        System.out.println("request " + r.getRequestId() + " FAILED: " + r.getError().getMessage());
+        return;
+    }
+    System.out.println("request " + r.getRequestId() + ": " + r.getCandidates().size() + " candidate(s)");
+}</pre>
+
+<div class="note">Pools also accept in-memory images
+(<code>launchAnalyzeEncodedImage</code>, <code>launchAnalyzeGray8/C3/C4</code>)
+and video frames (<code>launchAnalyzeVideoFrame</code>). Because the pool reads
+image buffers on a worker thread <em>after</em> the launch returns:
+<code>byte[]</code> and heap-buffer data is copied at launch (reuse the array
+immediately), while <em>direct</em> ByteBuffers are passed zero-copy and must
+not be modified until the matching result has been polled &mdash; the wrapper
+retains them until then, so they cannot be garbage collected early.</div>
+
+<h2 id="tracking">8. License Plate Tracking</h2>
+
+<p>The <code>PlateCandidateTracker</code> turns frame-by-frame detections into
+<em>one event per physical plate</em>, resistant to OCR misreadings and partial
+detections, with a representative thumbnail per plate.</p>
+
+<pre>PlateCandidateTrackerSetupParams tp = new PlateCandidateTrackerSetupParams();
+// defaults: trigger window 3.0s, max idle 3.5s, min 3 detections, 256x128 thumbnails
+
+try (VideoSource source = lpr.openVideoSource("traffic.mp4", FrameFormat.BGR24, 1920, -1);
+     ProcessorPool pool = lpr.createProcessorPool();
+     PlateCandidateTracker tracker = lpr.createPlateCandidateTracker(tp)) {
+
+    pool.setPlateRegionDetectionEnabled(true);
+    pool.setCropToPlateRegionEnabled(true);
+
+    // A frame must stay open from its launch until the tracker has consumed
+    // its result (the thumbnail is cut from it): correlate by request id.
+    var pendingFrames = new java.util.HashMap&lt;Long, VideoFrame&gt;();
+
+    for (VideoFrame frame; (frame = source.nextFrame()) != null; ) {
+        long id = frame.getSequenceNumber();
+        pendingFrames.put(id, frame);
+        pool.launchAnalyzeVideoFrame(0, id, ProcessorPool.TIMEOUT_INFINITE, frame, null);
+
+        for (PoolTrackingResult r;
+             (r = pool.pollNextTrackingResult(0, ProcessorPool.TIMEOUT_IMMEDIATE)) != null; ) {
+            handle(r, pendingFrames, tracker);
+        }
+    }
+    while (pool.getOngoingRequestCount(0) &gt; 0) {
+        handle(pool.pollNextTrackingResult(0, ProcessorPool.TIMEOUT_INFINITE), pendingFrames, tracker);
+    }
+    try (TrackerResult flushed = tracker.flush()) {   // close whatever is still tracked
+        reportTracks(flushed);
+    }
+}
+
+static void handle(PoolTrackingResult result, java.util.Map&lt;Long, VideoFrame&gt; pending,
+                   PlateCandidateTracker tracker) {
+    VideoFrame frame = pending.remove(result.getRequestId());
+    try (PoolTrackingResult r = result; VideoFrame f = frame) {
+        if (!r.isSuccess()) return;
+        try (TrackerResult events = tracker.processFrameCandidates(r, f)) {
+            reportTracks(events);
+        }
+    }
+}
+
+static void reportTracks(TrackerResult events) {
+    for (TrackedPlateCandidate t : events.getNewTracks()) {
+        System.out.printf("NEW  %-12s frames %d..%d%n",
+                t.getBestText(), t.getFirstDetectionFrameId(), t.getNewestDetectionFrameId());
+        VideoFrame thumb = t.getRepresentativeThumbnail();
+        if (thumb != null) thumb.saveAsJPEG(Paths.get(t.getBestText() + ".jpg"), 90);
+    }
+    for (TrackedPlateCandidate t : events.getClosedTracks()) {
+        System.out.println("END  " + t.getBestText());
+    }
+}</pre>
+
+<p>The same loop works unchanged for RTSP streams; add the
+<a href="#streams">reconnect pattern</a> around <code>nextFrame()</code> for
+long-running deployments.</p>
+
+<h2 id="advanced">9. Advanced Configuration</h2>
+
+<h3>Country-Specific Configuration</h3>
+
+<pre>// Weights break ties when a candidate fits several countries' syntaxes.
+for (String c : lpr.getSupportedCountries()) lpr.setCountryWeight(c, 0f);
+lpr.setCountryWeight("Spain", 1.0f);
+lpr.setCountryWeight("France", 0.7f);   // enabled, but Spain wins ties
+lpr.realizeCountryWeights();</pre>
+
+<div class="warn"><code>realizeCountryWeights()</code> rebuilds internal lookup
+tables and can be time consuming; call it once after configuring, never while
+another thread is analyzing. The engine-level call affects all existing and new
+processors; <code>Processor</code> and <code>ProcessorPool</code> expose the
+same methods to configure one instance independently.</div>
+
+<h3>Region of Interest</h3>
+
+<pre>// Restrict video-frame analysis to a region (e.g. one traffic lane):
+Rect lane = new Rect(400, 300, 800, 400);   // left, top, width, height
+List&lt;Candidate&gt; found = proc.analyzeVideoFrame(frame, lane);
+// null region = whole frame; also available on pool.launchAnalyzeVideoFrame</pre>
+
+<h3>Contrast Sensitivity</h3>
+
+<pre>proc.setContrastSensitivityFactor(0.3f);  // [0,1]; LOW values help with shadowed
+                                          // plates; higher values otherwise</pre>
+
+<h2 id="patterns">10. Patterns and Best Practices</h2>
+
+<ul>
+  <li><strong>try-with-resources everywhere.</strong> Engine, processors, pools,
+      video sources, frames, trackers and tracking results implement
+      <code>AutoCloseable</code>. A safety-net cleaner reclaims leaked objects
+      eventually, but deterministic close is the supported pattern.</li>
+  <li><strong>Results are plain objects.</strong> <code>Candidate</code>,
+      <code>CountryMatch</code>, <code>Element</code> and <code>PoolResult</code>
+      hold no native resources: keep them, collect them, share them between
+      threads, never close them. The two deliberate exceptions:
+      <code>VideoFrame</code> (close promptly) and <code>PoolTrackingResult</code>
+      (close after feeding the tracker).</li>
+  <li><strong>One engine, many workers.</strong> Create one
+      <code>SimpleLPR</code> for the process lifetime. A <code>Processor</code>
+      is single-threaded &mdash; one per thread &mdash; while a
+      <code>ProcessorPool</code> manages concurrency for you.</li>
+  <li><strong>Configure once, then run.</strong> Set country weights and
+      processor options before the hot loop; avoid reconfiguration while
+      analyses are in flight.</li>
+</ul>
+
+<h2 id="errors">11. Error Handling</h2>
+
+<pre>try (SimpleLPR lpr = SimpleLPR.setup(new EngineSetupParams())) {
+    try (Processor proc = lpr.createProcessor()) {
+        List&lt;Candidate&gt; found = proc.analyzeFile(Paths.get("car.jpg"));
+    }
+} catch (SimpleLPRException e) {
+    // Engine-reported failures: unsupported image, expired evaluation, ...
+    if (e.hasErrorCode()) System.err.println("engine error " + e.getErrorCode());
+    System.err.println(e.getMessage());
+} catch (IllegalStateException e) {
+    // Using an object after close()
+    System.err.println(e.getMessage());
+}</pre>
+
+<ul>
+  <li><strong>Synchronous calls throw</strong> <code>SimpleLPRException</code>
+      on failure.</li>
+  <li><strong>Pool requests do not throw:</strong> per-request failures come
+      back inside the polled result &mdash; check <code>isSuccess()</code> and
+      inspect <code>getError()</code>, so one bad image never tears down a
+      batch.</li>
+  <li>Creating processors, pools or trackers fails once the evaluation period
+      expires and no product key is registered.</li>
+</ul>
+
+<h2 id="performance">12. Performance Optimization</h2>
+
+<ul>
+  <li><strong>Use GRAY8 video frames</strong> when frames are only analyzed;
+      BGR24 only when displaying or saving color thumbnails.</li>
+  <li><strong>Cap frame sizes</strong> with <code>openVideoSource</code>'s
+      <code>maxWidthCap</code> (e.g. 1280&ndash;1920): recognition rarely needs
+      more, and cost scales with pixels.</li>
+  <li><strong>Skip frames</strong> when input FPS exceeds what tracking needs
+      (analyzing every 2nd&ndash;3rd frame is often enough at 25&ndash;30 fps).</li>
+  <li><strong>Prefer the pool</strong> for throughput; the no-arg
+      <code>createProcessorPool()</code> sizes it from the CPU cores.</li>
+  <li><strong>Zero-copy inputs:</strong> pass direct <code>ByteBuffer</code>s
+      when pixels already live in native memory (cameras, OpenCV) to avoid
+      per-frame copies.</li>
+  <li><strong>Enable only the countries you need</strong>: fewer syntaxes means
+      faster validation and fewer ambiguous ties.</li>
+  <li><strong>GPU off-load</strong> (<code>EngineSetupParams</code>) when a
+      CUDA device is available; raise
+      <code>maxConcurrentImageProcessingOps</code> accordingly.</li>
+</ul>
+
+<div class="note">Reference material: the <i>SimpleLPR Java API Reference</i> in
+the SDK's <code>doc</code> folder covers every class and method; the
+<code>samples/java</code> folder contains the complete, runnable versions of the
+programs shown here. Questions? <a href="https://www.warelogic.com">www.warelogic.com</a>.</div>
+
+</body>
+</html>

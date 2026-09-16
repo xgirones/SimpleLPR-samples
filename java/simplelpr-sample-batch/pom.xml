@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.warelogic.samples</groupId>
+        <artifactId>simplelpr-samples</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>simplelpr-sample-batch</artifactId>
+    <packaging>jar</packaging>
+
+    <name>SimpleLPR sample: batch folder analysis</name>
+    <description>Analyzes every image in a folder concurrently through a ProcessorPool.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.warelogic</groupId>
+            <artifactId>simplelpr</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Enables:  mvnw -pl :simplelpr-sample-batch exec:java -Dexec.args="..." -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.warelogic.simplelpr.samples.BatchFolderSample</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

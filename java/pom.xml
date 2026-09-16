@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.warelogic.samples</groupId>
+    <artifactId>simplelpr-samples</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>SimpleLPR Java samples</name>
+    <description>
+        Sample applications for the SimpleLPR Java wrapper. Deliberately standalone:
+        buildable from an SDK installation or from a plain checkout, with no other
+        setup than a Java 11+ JDK (Maven itself is bootstrapped by the included
+        mvnw wrapper scripts).
+    </description>
+    <url>https://www.warelogic.com</url>
+
+    <modules>
+        <module>simplelpr-sample-platereader</module>
+        <module>simplelpr-sample-batch</module>
+        <module>simplelpr-sample-tracking</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>11</maven.compiler.release>
+
+        <!-- SimpleLPR wrapper version the samples build against. -->
+        <simplelpr.version>3.6.6</simplelpr.version>
+    </properties>
+
+    <!--
+        Dual-mode dependency resolution, one pom, no profiles:
+
+        * Inside the SDK, the 'lib/repo' folder next to this pom is a miniature
+          Maven repository containing the wrapper JAR shipped with the SDK. Maven
+          finds the artifact there and the samples build fully offline.
+        * In a plain checkout (e.g. the SimpleLPR-samples GitHub repository) that
+          folder does not exist, the file:// repository yields nothing, and Maven
+          falls through to Maven Central, where the wrapper is published.
+
+        ${maven.multiModuleProjectDirectory} is the folder containing '.mvn' —
+        i.e. this samples root — regardless of which module is being built.
+
+        The marker comment below is replaced by the GitHub export scripts with
+        the per-platform natives classifier dependencies: standalone checkouts
+        have no SDK to supply the native binaries, so they arrive from Maven
+        Central and are extracted to a cache on first run. The SDK copy keeps
+        the comment as-is - inside the SDK, natives come from the installation.
+    -->
+    <dependencies>
+        <!-- Native binaries for standalone (no-SDK) operation: fetched from
+             Maven Central and extracted to ~/.cache/simplelpr on first run.
+             Both platforms are declared so a checkout builds and runs anywhere;
+             Maven downloads each jar once per version. -->
+        <dependency>
+            <groupId>com.warelogic</groupId>
+            <artifactId>simplelpr</artifactId>
+            <version>${simplelpr.version}</version>
+            <classifier>natives-win-x64</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.warelogic</groupId>
+            <artifactId>simplelpr</artifactId>
+            <version>${simplelpr.version}</version>
+            <classifier>natives-linux-x64</classifier>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+    <repositories>
+        <repository>
+            <id>simplelpr-sdk-local</id>
+            <url>file:///${maven.multiModuleProjectDirectory}/lib/repo</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.warelogic</groupId>
+                <artifactId>simplelpr</artifactId>
+                <version>${simplelpr.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
